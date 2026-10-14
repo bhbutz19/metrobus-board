@@ -515,7 +515,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   function render() {
     $('clock').textContent = nowClock();
     const arr = getBuses();
-    const display = mode === 'live' && scheduleAvailable ? displayBuses(arr) : arr.map(b=>({...b,kind:'live'}));
+    const display = scheduleAvailable ? displayBuses(mode === 'live' ? arr : []) : (mode === 'live' ? arr.map(b=>({...b,kind:'live'})) : []);
     const stale = mode === 'live' && lastUpdate && (Date.now() - lastUpdate > 90000);
 
     const rows = [];
@@ -549,11 +549,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       detail = 'Arrival predictions may be outdated — check WMATA';
       tone = 'leave-soon';
     } else if (!arr.length || mode === 'error') {
-      statusText = mode === 'error' ? 'LIVE OFFLINE ' : 'NO ARRIVALS  ';
-      detail = mode === 'error'
-        ? 'Check connection and API settings'
-        : 'WMATA may not have predictions for upcoming service';
-      tone = 'leave-now';
+      statusText = display.length ? 'SCHEDULE ONLY' : mode === 'error' ? 'LIVE OFFLINE ' : 'NO ARRIVALS  ';
+      detail = display.length ? 'Published schedule only — no live bus prediction' : mode === 'error' ? 'Check connection and API settings' : 'WMATA may not have predictions for upcoming service';
+      tone = 'leave-soon';
     } else {
       const leave = arr[0].m - walk - buffer;
       if (leave > 5) {
