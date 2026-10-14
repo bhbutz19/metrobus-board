@@ -1,20 +1,32 @@
-# Metrobus Departure Board
+# Metrobus Split-Flap Departure Board
 
-Vintage-style browser departure board for the **C91 westbound** at WMATA stop **1001453**, with a five-minute walking countdown and adjustable buffer.
+**Working baseline — October 13, 2026.** User-confirmed operational at https://bus.cowboybutz.com.
 
-## Development
+A mechanical-style departure board powered by WMATA's live predictions and published stop schedules.
 
-Open `index.html` in your browser for demo mode. Live mode requires PHP hosting with `api/arrivals.php`; GitHub Pages alone does not execute PHP.
+## Baseline functionality
+- Enter a **seven-digit WMATA stop ID** in Settings; it persists in the browser. Default: **1001453**.
+- Retrieve and display the stop's actual name, available routes/destinations, and three upcoming arrivals.
+- Live arrival predictions shown in minutes; scheduled-only times shown as **h:mmS**; **NO ETA** when no prediction is available.
+- Configurable walk time (default 5 minutes) and safety buffer (default 1 minute).
+- Departure warning uses **live predictions**, not scheduled-only times.
+- Mechanical split-flap display, including animated empty tiles, with generated clacking sound and a mute toggle.
+- Manual Refresh Live triggers the mechanical cycle; automatic data updates continue while the page is open.
 
-## Deployment to 2M Hosting cPanel
+## Architecture
+- `index.html`: browser board and settings.
+- `api/arrivals.php`: real-time arrivals, filtered by validated stop ID.
+- `api/schedule.php`: published stop schedule (different from live predictions).
+- `api/stop.php`: WMATA stop-name lookup.
+- `.cpanel.yml`: deploys site and endpoints to `/home/cowboybu/public_html/bus.cowboybutz.com/`.
 
-1. Create `bus.cowboybutz.com` in cPanel **Domains**, with a separate document root. Confirm its exact path.
-2. Edit `.cpanel.yml`: replace `CPANEL_USERNAME` and change `DEPLOYPATH` to the verified subdomain document root. **Do not deploy until that path is correct.**
-3. In cPanel **Git Version Control**, clone `https://github.com/bhbutz19/metrobus-board.git` to a non-public directory such as `/home/USERNAME/repositories/metrobus-board`.
-4. Use **Update from Remote** and **Deploy HEAD Commit**.
-5. Create `/home/USERNAME/.wmata_bus_key` in cPanel File Manager, holding only your WMATA subscription key. Keep it outside the website directory and use restrictive permissions. Alternatively provide the `WMATA_API_KEY` PHP environment variable.
-6. Visit `https://bus.cowboybutz.com/`. Test demo mode, then **Connect Live**.
+## Deployment
+1. cPanel > Git Version Control > `metrobus-board` > **Update from Remote** > **Deploy HEAD Commit**.
+2. Reload https://bus.cowboybutz.com (hard-refresh if necessary).
+3. The private WMATA API key resides at `/home/cowboybu/.wmata_bus_key` **outside** `public_html`, or in the `WMATA_API_KEY` server environment variable. **Never commit the key.**
 
-The public endpoint is not authenticated. Consider caching/rate-limiting to manage API quota before sharing publicly. The current direction filter requires WMATA's westbound direction text; if no predictions appear when buses are listed on busETA, inspect the response and adjust the filter.
-
-Never commit the real WMATA key.
+## Notes
+- Live and scheduled trips are deduplicated by trip ID or approximate time; matching is best-effort.
+- The website backend makes authenticated WMATA API requests. Browser-side code does not contain the secret.
+- The user confirmed that the site, audio, live predictions, scheduled arrivals, stop switching, and stop-name headings work. Not all edge cases have been formally tested.
+- Create future improvements on `main`; the `baseline-2026-10-13` branch preserves this state.
