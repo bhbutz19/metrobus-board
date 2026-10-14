@@ -6,3 +6,4 @@ deployment:
     - /bin/mkdir -p "$DEPLOYPATH/api"
     - /bin/cp index.html "$DEPLOYPATH/index.html"
     - /bin/cp api/arrivals.php "$DEPLOYPATH/api/arrivals.php"
+    - /bin/cp api/schedule.php "$DEPLOYPATH/api/schedule.php"
