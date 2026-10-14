@@ -98,9 +98,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   text-transform:uppercase;
   text-shadow:0 1px 0 #000;
   z-index:2;
+  overflow:hidden;
 }
-.char .top{top:0;height:50%;font-size:clamp(18px,2vw,28px);padding-top:3px}
-.char .bottom{bottom:0;height:50%;font-size:clamp(18px,2vw,28px);padding-bottom:3px}
+.char .glyph{position:absolute;left:0;right:0;height:200%;display:flex;align-items:center;justify-content:center;line-height:1;white-space:nowrap}
+.char .top .glyph{top:0}
+.char .bottom .glyph{bottom:0}
+.char .top{top:0;height:50%;font-size:clamp(18px,2vw,28px)}
+.char .bottom{bottom:0;height:50%;font-size:clamp(18px,2vw,28px)}
 .char .hinge{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);background:var(--hinge);box-shadow:0 1px 0 rgba(255,255,255,.05);z-index:3}
 .routeField .char{width:clamp(22px,2.4vw,30px);height:clamp(32px,3.3vw,42px)}
 .routeField .char .top,.routeField .char .bottom{font-size:clamp(20px,2.3vw,32px)}
@@ -247,7 +251,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   function cycleTile(tile, from, to, delay) {
     if (reducedMotion.matches || from === to && !forceCycle) return;
-    const top = tile.querySelector('.top'), bottom = tile.querySelector('.bottom');
+    const top = tile.querySelector('.top .glyph'), bottom = tile.querySelector('.bottom .glyph');
     if (!top || !bottom) return;
     let current = wheel.indexOf(from); if (current < 0) current = 0;
     const target = Math.max(0, wheel.indexOf(to));
@@ -309,10 +313,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     tile.className = 'char' + (char === ' ' ? ' space' : '') + (extraClass ? ' ' + extraClass : '') + (shouldFlip ? ' flip' : '');
     const top = document.createElement('span');
     top.className = 'top';
-    top.textContent = char;
+    const topGlyph = document.createElement('span');
+    topGlyph.className = 'glyph';
+    topGlyph.textContent = char;
+    top.appendChild(topGlyph);
     const bottom = document.createElement('span');
     bottom.className = 'bottom';
-    bottom.textContent = char;
+    const bottomGlyph = document.createElement('span');
+    bottomGlyph.className = 'glyph';
+    bottomGlyph.textContent = char;
+    bottom.appendChild(bottomGlyph);
     const hinge = document.createElement('span');
     hinge.className = 'hinge';
     tile.append(top, bottom, hinge);
