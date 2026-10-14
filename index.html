@@ -218,6 +218,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   100%{transform:scaleX(.89) perspective(260px) rotateX(0);filter:brightness(1)}
 }
 @media(prefers-reduced-motion:reduce){.char.flip .face{animation:none}}
+.soundToggle{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;color:#eee0c6;padding:11px 12px;background:#24221c;border:1px solid #5b513f;border-radius:4px}
+.soundToggle input{accent-color:#d7a451;width:18px;height:18px;cursor:pointer}
+.soundToggle #soundState{margin-left:auto;font-size:11px;color:#c8ab79}
 </style>
 </head>
 <body>
@@ -274,6 +277,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
         <input id="buffer" type="number" min="0" max="15" value="1">
       </div>
       <button id="applyBtn" class="primary">Reconnect live</button>
+      <label class="soundToggle"><input id="soundToggle" type="checkbox"> Mechanical clack sound <span id="soundState">Muted</span></label>
     </div>
     <div class="help">Live refresh: every 30 seconds while this page is open. WMATA prediction API: <a href="https://developer.wmata.com/apis" target="_blank" rel="noopener noreferrer">developer.wmata.com</a> · <a href="https://buseta.wmata.com/m/index?q=1001453" target="_blank" rel="noopener noreferrer">Official stop page</a></div>
     <div id="error" class="error" role="alert"></div>
@@ -304,6 +308,40 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   let forceCycle = false;
   const wheel = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let soundEnabled = false, audioCtx = null, lastClack = 0;
+  // Synthesized mechanical clack: no external audio file or additional requests.
+  function playClack() {
+    if (!soundEnabled || !audioCtx || audioCtx.state !== 'running') return;
+    const time = audioCtx.currentTime;
+    if (time - lastClack < .045) return; // limit overlapping tile clicks
+    lastClack = time;
+    const duration = .035, length = Math.ceil(audioCtx.sampleRate * duration);
+    const buffer = audioCtx.createBuffer(1,length,audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<length;i++){
+      const decay = Math.pow(1-i/length, 4);
+      data[i] = (Math.random()*2-1)*decay*.37;
+    }
+    const src=audioCtx.createBufferSource(), filter=audioCtx.createBiquadFilter(), gain=audioCtx.createGain();
+    filter.type='bandpass';filter.frequency.value=1900;filter.Q.value=.6;
+    gain.gain.value=.20;
+    src.buffer=buffer;src.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);
+    src.start(time);src.stop(time+duration);
+  }
+  async function setSound(on) {
+    soundEnabled = !!on;
+    if(soundEnabled){
+      try {
+        audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+        await audioCtx.resume();
+        if(audioCtx.state!=='running') throw new Error('Audio unavailable');
+      } catch(e) {soundEnabled=false;}
+    }
+    $('soundToggle').checked = soundEnabled;
+    $('soundState').textContent = soundEnabled ? 'On' : 'Muted';
+    try {localStorage.setItem('metrobus-sound',soundEnabled?'on':'off');} catch(e){}
+    if(soundEnabled) playClack();
+  }
   function cycleTile(tile, from, to, delay) {
     if (reducedMotion.matches || from === to && !forceCycle) return;
     const face = tile.querySelector('.face');
@@ -319,6 +357,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     face.textContent = from;
     frames.forEach((letter, i) => setTimeout(() => {
       face.textContent = letter;
+      playClack();
       tile.classList.remove('flip'); void tile.offsetWidth; tile.classList.add('flip');
     }, delay + i * 68));
   }
@@ -588,6 +627,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   }
 
   $('applyBtn').addEventListener('click', connect);
+  $('soundToggle').addEventListener('change',e=>setSound(e.target.checked));
   $('refreshBtn').addEventListener('click', () => mode === 'live' ? fetchLive(true) : connect(true));
   const settings = $('settings');
   function toggleSettings(open) {settings.hidden = !open; $('settingsBtn').setAttribute('aria-expanded',String(open)); if(open) $('walk').focus(); else $('settingsBtn').focus();}
