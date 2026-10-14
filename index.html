@@ -263,7 +263,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
   <section class="board" id="board" aria-label="Bus departures">
     <div class="boardHead">
-      <span class="site">P STREET · WESTBOUND</span>
+      <span class="site" id="boardSite">P STREET · WESTBOUND</span>
       <span class="clock" id="clock">--:--:--</span>
     </div>
 
@@ -707,18 +707,22 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   }
 
   $('stopInput').value=stopID;
+  function updateStopHeading(){
+    $('boardSite').textContent=stopID===DEFAULT_STOP?'P STREET · WESTBOUND':'STOP '+stopID+' · DEPARTURES';
+    $('stopDescription').textContent=stopID===DEFAULT_STOP?'P St NW + 7th St NW · Stop 1001453 · West toward Georgetown':'WMATA stop '+stopID+' · All routes and directions';
+  }
   function changeStop(){
     const next=$('stopInput').value.trim();
     if(!/^[0-9]{7}$/.test(next)){$('error').textContent='Please enter a seven-digit WMATA stop number.';return;}
     if(next===stopID){toggleSettings(false);return;}
     stopID=next;try{localStorage.setItem('metrobus-stop',stopID)}catch(e){}
-    $('stopDescription').textContent='WMATA stop '+stopID+' · All routes and directions';
+    updateStopHeading();
     predictions=[];schedule=[];scheduleAvailable=false;lastUpdate=null;lastScheduleFetch=0;mode='loading';previousSignature='';
     $('error').textContent='';render();connect(true);toggleSettings(false);
   }
   $('saveStop').addEventListener('click',changeStop);
   $('stopInput').addEventListener('keydown',e=>{if(e.key==='Enter')changeStop()});
-  if(stopID!==DEFAULT_STOP)$('stopDescription').textContent='WMATA stop '+stopID+' · All routes and directions';
+  updateStopHeading();
   $('applyBtn').addEventListener('click', connect);
   $('soundToggle').addEventListener('change',e=>setSound(e.target.checked));
   $('refreshBtn').addEventListener('click', () => mode === 'live' ? fetchLive(true) : connect(true));
