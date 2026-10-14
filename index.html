@@ -365,7 +365,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   let demoSet = Date.now();
   let previousSignature = '';
   let forceCycle = false;
-  let alertEnabled=false, alertTestUntil=0, previousAlertKey=null;
+  let alertEnabled=false, alertTestUntil=0, previousAlertKey=null, testFlashActive=false;
   const wheel = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let soundEnabled = false, audioCtx = null, lastClack = 0;
@@ -659,7 +659,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     const isUrgent=mode==='live'&&!stale&&arr.length>0&&display[0]?.kind==='live'&&tone==='leave-now';
     const alertKey=isUrgent ? stopID+'|'+(arr[0].tripId||arr[0].id||arr[0].route+'-'+Math.round((lastUpdate||Date.now())/1800000)) : null;
     if(alertKey!==previousAlertKey){previousAlertKey=alertKey;if(isUrgent&&alertEnabled)alertTestUntil=Date.now()+12000;}
-    const flashing=alertEnabled&&((isUrgent&&alertTestUntil>Date.now())||alertTestUntil>Date.now());
+    if(alertTestUntil<=Date.now())testFlashActive=false;
+    const flashing=alertTestUntil>Date.now() && (alertEnabled || testFlashActive);
     $('board').classList.toggle('departureFlash',flashing);
     const previousStatus = previousSignature ? JSON.parse(previousSignature).statusText || '' : '';
     if (animate || forceCycle) renderStatus(statusText, detail, tone, previousStatus, true);
@@ -780,7 +781,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   $('alertToggle').checked=alertEnabled;
   $('alertState').textContent=alertEnabled?'On':'Off';
   $('alertToggle').addEventListener('change',e=>{alertEnabled=e.target.checked;$('alertState').textContent=alertEnabled?'On':'Off';try{localStorage.setItem('metrobus-alert',alertEnabled?'on':'off')}catch(e){};if(!alertEnabled)alertTestUntil=0;render()});
-  $('testAlert').addEventListener('click',()=>{alertTestUntil=Date.now()+8000;$('board').classList.add('departureFlash');toggleSettings(false);render()});
+  $('testAlert').addEventListener('click',()=>{testFlashActive=true;alertTestUntil=Date.now()+8000;toggleSettings(false);render();setTimeout(render,8200)});
   $('refreshBtn').addEventListener('click', () => mode === 'live' ? fetchLive(true) : connect(true));
   const settings = $('settings');
   function toggleSettings(open) {settings.hidden = !open; $('settingsBtn').setAttribute('aria-expanded',String(open)); if(open) $('walk').focus(); else $('settingsBtn').focus();}
