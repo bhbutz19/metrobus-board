@@ -233,6 +233,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .char.colon .face::before,.char.colon .face::after{content:"";position:absolute;left:50%;width:clamp(3px,.34vw,5px);height:clamp(3px,.34vw,5px);background:currentColor;transform:translateX(-50%);border-radius:1px;box-shadow:0 1px 0 #000}
 .char.colon .face::before{top:25%}
 .char.colon .face::after{bottom:25%}
+
+/* Mechanical motion applies to the entire flap, including unprinted positions. */
+.char.flip{animation:tileFlipKick .26s ease-in-out both}
+@keyframes tileFlipKick{
+  0%{transform:perspective(260px) rotateX(0);filter:brightness(1)}
+  48%{transform:perspective(260px) rotateX(-76deg);filter:brightness(.72)}
+  55%{transform:perspective(260px) rotateX(72deg);filter:brightness(.78)}
+  100%{transform:perspective(260px) rotateX(0);filter:brightness(1)}
+}
+.char.flip .hinge{background:#0f0f0f}
+@media(prefers-reduced-motion:reduce){.char.flip{animation:none}}
 </style>
 </head>
 <body>
@@ -480,7 +491,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       const shouldFlip = opts.animate && char !== priorNorm[index];
       const tile = createChar(char, opts.accent ? 'accent' : '', shouldFlip);
       group.appendChild(tile);
-      if (opts.animate && char !== ' ' && (opts.force || char !== priorNorm[index])) {
+      if (opts.animate && (opts.force || char !== priorNorm[index])) {
         cycleTile(tile, priorNorm[index] || ' ', char, 35 * index + (opts.rowIndex || 0) * 90);
       }
     });
