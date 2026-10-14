@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+ <linearGradient id="metal" x2="0" y2="1"><stop stop-color="#41403d"/><stop offset=".15" stop-color="#20201e"/><stop offset=".85" stop-color="#111110"/><stop offset="1" stop-color="#34322e"/></linearGradient>
+ <linearGradient id="flap" x2="0" y2="1"><stop stop-color="#292824"/><stop offset=".49" stop-color="#131312"/><stop offset=".51" stop-color="#191816"/><stop offset="1" stop-color="#0c0c0b"/></linearGradient>
+</defs>
+<rect x="5" y="5" width="502" height="502" rx="64" fill="url(#metal)" stroke="#6e6b65" stroke-width="3"/>
+<rect x="23" y="72" width="466" height="365" rx="30" fill="#080807" stroke="#32312e" stroke-width="8"/>
+<g fill="url(#flap)" stroke="#55514a" stroke-width="3">
+ <rect x="38" y="86" width="140" height="334" rx="15"/>
+ <rect x="186" y="86" width="140" height="334" rx="15"/>
+ <rect x="334" y="86" width="140" height="334" rx="15"/>
+</g>
+<g fill="#ffc43f" font-family="Arial,Helvetica,sans-serif" font-size="178" font-weight="900" text-anchor="middle">
+ <text x="108" y="311">B</text><text x="256" y="311">U</text><text x="404" y="311">S</text>
+</g>
+<g stroke="#050505" stroke-width="7"><path d="M39 255H177M187 255H325M335 255H473"/></g>
+<g stroke="#69645a" stroke-width="2"><path d="M39 251H177M187 251H325M335 251H473"/></g>
+<g fill="#090909" stroke="#666259" stroke-width="3"><circle cx="49" cy="49" r="10"/><circle cx="463" cy="49" r="10"/><circle cx="49" cy="463" r="10"/><circle cx="463" cy="463" r="10"/></g>
+</svg>
