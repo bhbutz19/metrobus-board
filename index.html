@@ -523,7 +523,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       const label=bus.kind==='scheduled' ? padded(String(new Date(bus.time).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',hour12:false})).replace(':','')+'S',6,'right') : minsLabel(bus.m);
       rows.push({route:ROUTE,dest:DESTINATION,arrive:label});
     }
-    while(rows.length<3)rows.push({route:ROUTE,dest:DESTINATION,arrive:scheduleAvailable&&display.length===0?'END SV':'NO ETA'});
+    while(rows.length<3)rows.push({route:ROUTE,dest:DESTINATION,arrive:'NO ETA'});
 
     const signature = JSON.stringify({ rows, mode, stale, walk: $('walk').value, buffer: $('buffer').value, first: arr[0]?.m ?? null });
     const animate = signature !== previousSignature;
@@ -548,9 +548,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       statusText = 'UPDATE DELAYED';
       detail = 'Arrival predictions may be outdated — check WMATA';
       tone = 'leave-soon';
-    } else if (!arr.length || mode === 'error') {
-      statusText = display.length ? 'SCHEDULE ONLY' : mode === 'error' ? 'LIVE OFFLINE ' : 'NO ARRIVALS  ';
-      detail = display.length ? 'Published schedule only — no live bus prediction' : mode === 'error' ? 'Check connection and API settings' : 'WMATA may not have predictions for upcoming service';
+    } else if (!arr.length || mode === 'error' || display[0]?.kind === 'scheduled') {
+      statusText = display[0]?.kind === 'scheduled' ? 'SCHEDULE ONLY' : mode === 'error' ? 'LIVE OFFLINE ' : 'NO ARRIVALS  ';
+      detail = display[0]?.kind === 'scheduled' ? 'Next listed bus is scheduled, not live-tracked' : mode === 'error' ? 'Check connection and API settings' : 'WMATA may not have predictions for upcoming service';
       tone = 'leave-soon';
     } else {
       const leave = arr[0].m - walk - buffer;
