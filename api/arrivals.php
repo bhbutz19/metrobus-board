@@ -18,7 +18,9 @@ if ($key === '') {
 }
 if ($key === '') fail(503, 'WMATA API key not configured on server');
 if (!function_exists('curl_init')) fail(503, 'PHP cURL extension unavailable');
-$url = 'https://api.wmata.com/NextBusService.svc/json/jPredictions?StopID=1001453';
+$stop = (string)($_GET['stop'] ?? '1001453');
+if (!preg_match('/^[0-9]{7}$/', $stop)) fail(400, 'Enter a seven-digit WMATA stop ID');
+$url = 'https://api.wmata.com/NextBusService.svc/json/jPredictions?StopID=' . rawurlencode($stop);
 $curl = curl_init($url);
 curl_setopt_array($curl, [
     CURLOPT_RETURNTRANSFER => true,
@@ -35,8 +37,4 @@ if ($body === false) fail(502, 'WMATA connection failed');
 if ($code !== 200) fail(502, 'WMATA returned HTTP ' . $code);
 $data = json_decode($body, true);
 if (!isset($data['Predictions']) || !is_array($data['Predictions'])) fail(502, 'Unexpected WMATA response');
-$predictions = array_values(array_filter($data['Predictions'], static function ($p) {
-    return strtoupper(trim((string)($p['RouteID'] ?? ''))) === 'C91'
-        && stripos((string)($p['DirectionText'] ?? ''), 'west') !== false;
-}));
-echo json_encode(['Predictions' => $predictions], JSON_UNESCAPED_SLASHES);
+echo json_encode(['Predictions' => $data['Predictions'], 'StopID' => $stop], JSON_UNESCAPED_SLASHES);
