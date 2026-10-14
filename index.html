@@ -221,6 +221,18 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .soundToggle{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;color:#eee0c6;padding:11px 12px;background:#24221c;border:1px solid #5b513f;border-radius:4px}
 .soundToggle input{accent-color:#d7a451;width:18px;height:18px;cursor:pointer}
 .soundToggle #soundState{margin-left:auto;font-size:11px;color:#c8ab79}
+
+/* v2.1: all positions use physical flaps, including blanks. */
+.char.space{width:clamp(18px,1.95vw,26px)!important;background:var(--tile)!important;border:1px solid #39352b!important;box-shadow:inset 0 1px 0 #484034,inset 0 -2px 2px #060606!important}
+.routeField .char.space{width:clamp(22px,2.4vw,30px)!important}
+.arriveField .char.space{width:clamp(20px,2.15vw,28px)!important}
+.statusBoard .flapGroup .char.space{width:clamp(22px,2.7vw,38px)!important}
+@media(max-width:620px){.char.space,.routeField .char.space,.arriveField .char.space,.statusBoard .flapGroup .char.space{width:20px!important}}
+/* Draw colon as two separate machined dots above/below the hinge. */
+.char.colon .face{font-size:0!important}
+.char.colon .face::before,.char.colon .face::after{content:"";position:absolute;left:50%;width:clamp(3px,.34vw,5px);height:clamp(3px,.34vw,5px);background:currentColor;transform:translateX(-50%);border-radius:1px;box-shadow:0 1px 0 #000}
+.char.colon .face::before{top:25%}
+.char.colon .face::after{bottom:25%}
 </style>
 </head>
 <body>
@@ -358,6 +370,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     face.textContent = from;
     frames.forEach((letter, i) => setTimeout(() => {
       face.textContent = letter;
+      tile.classList.toggle('colon',letter === ':');
       playClack();
       tile.classList.remove('flip'); void tile.offsetWidth; tile.classList.add('flip');
     }, delay + i * 68));
@@ -447,7 +460,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   }
   function createChar(char, extraClass = '', shouldFlip = false) {
     const tile = document.createElement('span');
-    tile.className = 'char' + (char === ' ' ? ' space' : '') + (extraClass ? ' ' + extraClass : '');
+    tile.className = 'char' + (char === ' ' ? ' space' : '') + (char === ':' ? ' colon' : '') + (extraClass ? ' ' + extraClass : '');
     const face = document.createElement('span');
     face.className = 'face';
     face.textContent = char;
