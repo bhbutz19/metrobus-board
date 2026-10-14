@@ -1,8 +1,561 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>C91 · P Street Departure Board</title><style>
-:root{color-scheme:dark;--amber:#f3bd64;--muted:#988c78;--ink:#11110f;--panel:#20201d;--green:#7df2ac;--yellow:#ffce67;--red:#fa776d}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0%,#29251e,#090a0a 75%);color:#f3eee4;font-family:Arial,Helvetica,sans-serif;min-height:100vh}.shell{max-width:1100px;margin:0 auto;padding:35px 22px 70px}.top{display:flex;justify-content:space-between;gap:15px;align-items:start;flex-wrap:wrap;margin-bottom:26px}.eyebrow{color:var(--muted);font-size:11px;letter-spacing:.26em;font-weight:700}.top h1{font-size:clamp(23px,4vw,42px);letter-spacing:.06em;margin:10px 0 7px;color:var(--amber);font-weight:800}.sub{font-size:14px;color:#aea696}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}button,input{font:inherit}button{border:1px solid #554a35;background:#29261f;color:#f0d2a0;padding:10px 14px;border-radius:6px;cursor:pointer}button:hover{background:#3c3325}button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}button.primary{background:#d7a451;color:#17130c;border-color:#d7a451;font-weight:bold}.badge{font-size:11px;font-weight:bold;letter-spacing:.1em;border:1px solid #75603c;background:#382c19;border-radius:20px;padding:8px 10px;color:#efbd6c}.board{border:6px solid #31302a;border-radius:12px;background:#111210;box-shadow:0 14px 55px #000a,inset 0 0 0 2px #060606;overflow:hidden;padding:clamp(15px,3.5vw,36px)}.boardHead{display:flex;justify-content:space-between;align-items:center;gap:15px;border-bottom:2px solid #51432c;padding-bottom:19px;margin-bottom:20px}.boardHead .site{color:var(--amber);font-weight:800;letter-spacing:.15em;font-size:clamp(16px,3vw,29px)}.clock{color:#b4a68d;font-family:'Courier New',monospace;font-size:clamp(15px,2vw,22px);white-space:nowrap}.colheads,.arrival{display:grid;grid-template-columns: minmax(63px,.6fr) minmax(120px,2.1fr) minmax(95px,1.1fr);gap:8px;align-items:center}.colheads{padding:0 10px 9px;color:#958b76;font-size:10px;letter-spacing:.18em}.colheads span:last-child{text-align:right}.arrival{margin-bottom:8px;min-height:82px;padding:12px 12px;border-radius:3px;background:repeating-linear-gradient(180deg,#272723 0px,#272723 38px,#161714 39px,#161714 41px,#272723 42px);border-top:1px solid #47443d;border-bottom:1px solid #070807;font-family:'Courier New',monospace;font-weight:900;letter-spacing:.06em}.arrival .route{color:var(--amber);font-size:clamp(27px,4.1vw,48px)}.arrival .dest{font-size:clamp(16px,2.6vw,30px);color:#f2ede2}.arrival .mins{text-align:right;color:#e9c18a;font-size:clamp(22px,3.6vw,41px);white-space:nowrap}.arrival.dim{opacity:.7}.arrival.empty .dest{font-size:18px;color:#9b9485}.bigstatus{margin-top:25px;padding:24px 12px;border:2px solid #254934;background:#14251b;text-align:center;border-radius:4px;transition:background .4s,border-color .4s}.bigstatus .overline{font-size:11px;letter-spacing:.2em;color:#b5b0a1}.bigstatus .headline{font-weight:900;font-size:clamp(35px,7vw,78px);letter-spacing:.05em;color:var(--green);margin:7px auto}.bigstatus .explainer{font-size:14px;color:#dadad3}.bigstatus.soon{background:#322817;border-color:#ad823a}.bigstatus.soon .headline{color:var(--yellow)}.bigstatus.now{background:#3c1d1c;border-color:#bd544c}.bigstatus.now .headline{color:var(--red)}.bigstatus.unknown{background:#242424;border-color:#656565}.bigstatus.unknown .headline{color:#c4c4c4}.bottom{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:21px;font-size:11px;letter-spacing:.07em;color:#a69e8d}.dot{display:inline-block;width:8px;height:8px;background:#777;border-radius:50%;margin-right:5px}.dot.live{background:#6fd5a1}.dot.demo{background:#e0ad62}.settings{margin-top:25px;background:#181816;border:1px solid #444036;border-radius:10px;padding:22px}.settings h2{font-size:17px;margin:0 0 9px;color:var(--amber)}.settings p{color:#b6b0a3;line-height:1.5;font-size:13px}.fields{display:flex;gap:15px;flex-wrap:wrap;align-items:end}.field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px}.field label{color:#cfc1a8;font-size:12px}.field input{background:#10110f;border:1px solid #51483b;color:#faf6ed;padding:11px 12px;border-radius:5px;min-width:0;width:100%}.field.narrow{flex:0 1 145px;min-width:115px}.help{font-size:12px;color:#928d83;line-height:1.6;margin-top:13px}.error{margin-top:13px;color:#ffb1a9;font-size:13px;line-height:1.5;white-space:pre-wrap}.demoControl{margin-top:16px;border-top:1px solid #39372f;padding-top:15px;display:none;align-items:center;gap:10px;flex-wrap:wrap}.demoControl.active{display:flex}.demoControl input{accent-color:var(--amber);flex:1;min-width:100px}.demoControl strong{min-width:65px}.link{color:#e6bc76}.sr{position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);overflow:hidden}@media(max-width:580px){.shell{padding:20px 10px 55px}.board{border-width:3px;padding:12px}.arrival{min-height:64px;padding:8px 7px}.colheads,.arrival{grid-template-columns:53px minmax(98px,1fr) 88px;gap:4px}.arrival .route{font-size:23px}.arrival .dest{font-size:15px;letter-spacing:0}.arrival .mins{font-size:20px;letter-spacing:0}.bigstatus{padding:17px 8px}.top h1{font-size:25px}.boardHead .site{font-size:14px;letter-spacing:.08em}}
-@media(prefers-reduced-motion:no-preference){.arrival.flip span{animation:flap .48s ease-in-out both;transform-origin:center}@keyframes flap{0%{transform:perspective(300px) rotateX(-82deg);opacity:.3}55%{transform:perspective(300px) rotateX(12deg);opacity:1}100%{transform:perspective(300px) rotateX(0);opacity:1}}}.arrival span{display:block;backface-visibility:hidden}.board:fullscreen{width:100vw;height:100vh;display:flex;flex-direction:column;justify-content:center;border-radius:0}.board:fullscreen .arrival{min-height:12vh}.board:fullscreen .bigstatus{margin-top:4vh}.board:fullscreen .bigstatus .headline{font-size:clamp(60px,9vw,130px)}
-</style></head><body><main class="shell"><header class="top"><div><div class="eyebrow">WASHINGTON · DISTRICT OF COLUMBIA</div><h1>METROBUS DEPARTURE BOARD</h1><div class="sub">P St NW + 7th St NW · Stop 1001453 · West toward Georgetown</div></div><div class="toolbar"><span class="badge" id="modePill">DEMO MODE</span><button id="demoBtn">Demo</button><button id="refreshBtn" class="primary">Connect Live</button><button id="fullBtn">Fullscreen</button></div></header><section class="board" aria-label="Bus departures"><div class="boardHead"><span class="site">P STREET · WESTBOUND</span><span class="clock" id="clock">--:--:--</span></div><div class="colheads"><span>ROUTE</span><span>DESTINATION</span><span>ARRIVAL</span></div><div id="arrivals"><div class="arrival"><span class="route">C91</span><span class="dest">GEORGETOWN</span><span class="mins">12 MIN</span></div><div class="arrival dim"><span class="route">C91</span><span class="dest">GEORGETOWN</span><span class="mins">28 MIN</span></div><div class="arrival dim"><span class="route">C91</span><span class="dest">GEORGETOWN</span><span class="mins">42 MIN</span></div></div><section class="bigstatus" id="status" aria-live="polite"><div class="overline">YOUR DEPARTURE STATUS</div><div class="headline" id="headline">LEAVE IN 6 MIN</div><div class="explainer" id="detail">5-minute walk · 1-minute safety buffer</div></section><div class="bottom"><span><span class="dot demo" id="dot"></span><span id="connection">SIMULATED ARRIVAL TIMES</span></span><span id="updated">Demo mode · Not live data</span></div></section><section class="settings" id="settings"><h2>Board settings</h2><p>Live predictions come through your website’s private server endpoint. Your WMATA key never appears in the page or browser requests.</p><div class="fields"><div class="field narrow"><label for="walk">Walk (minutes)</label><input id="walk" type="number" min="1" max="30" value="5"></div><div class="field narrow"><label for="buffer">Safety buffer (minutes)</label><input id="buffer" type="number" min="0" max="15" value="1"></div><button id="applyBtn" class="primary">Connect live</button></div><div class="help">Live refresh: every 30 seconds while this page is open. The key stays on the server, outside the website directory. WMATA prediction API: <a class="link" href="https://developer.wmata.com/apis" target="_blank" rel="noopener noreferrer">developer.wmata.com</a> · <a class="link" href="https://buseta.wmata.com/m/index?q=1001453" target="_blank" rel="noopener noreferrer">Official stop page</a></div><div id="error" class="error" role="alert"></div><div class="demoControl active" id="demoControl"><label for="demoArrival">Test a bus arrival:</label><input type="range" id="demoArrival" min="0" max="30" value="12"><strong id="demoValue">12 min</strong><span style="font-size:12px;color:#918a7a">Demo only</span></div></section></main><script>
-(()=>{'use strict';const STOP='1001453', ROUTE='C91';const $=id=>document.getElementById(id);let previousRows=[],mode='demo', predictions=[],pollId=null,lastUpdate=null,working=false,demoMinutes=12,demoSet=Date.now();const readNum=(id,fallback)=>{const v=Number($(id).value);return Number.isFinite(v)?Math.max(0,v):fallback};const minsLabel=m=>m<=0?'DUE':`${m} MIN`;const now=()=>new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'America/New_York'});function getBuses(){if(mode==='demo'){const elapsed=(Date.now()-demoSet)/60000;return [demoMinutes, demoMinutes+16,demoMinutes+30].map((m,i)=>({m:Math.max(0,Math.ceil(m-elapsed)),id:'demo-'+i}));}return predictions.map(p=>({...p,m:Math.max(0,Math.ceil(p.m-(Date.now()-lastUpdate)/60000))})).sort((a,b)=>a.m-b.m)}function render(){ $('clock').textContent=now();let arr=getBuses();const holder=$('arrivals');const nextRows=arr.slice(0,3).map(b=>[ROUTE,'GEORGETOWN',minsLabel(b.m)]);if(mode==='error')nextRows.length=0;const hasChanged=JSON.stringify(nextRows)!==JSON.stringify(previousRows);if(hasChanged){holder.replaceChildren();if(!arr.length){const row=document.createElement('div');row.className='arrival empty';row.innerHTML='<span class="route">C91</span><span class="dest">NO PREDICTIONS</span><span class="mins">--</span>';holder.append(row);}else for(let i=0;i<Math.min(3,arr.length);i++){const bus=arr[i],row=document.createElement('div');row.className='arrival'+(i?' dim':'');for(const [cls,val] of [['route',ROUTE],['dest','GEORGETOWN'],['mins',minsLabel(bus.m)]]){const el=document.createElement('span');el.className=cls;el.textContent=val;row.append(el)}holder.append(row)}holder.querySelectorAll('.arrival').forEach(row=>{row.classList.add('flip');row.addEventListener('animationend',()=>row.classList.remove('flip'),{once:true})});previousRows=nextRows;}const s=$('status'),h=$('headline'),d=$('detail');s.className='bigstatus';const stale=mode==='live'&&lastUpdate&&Date.now()-lastUpdate>90000;if(stale){s.classList.add('unknown');h.textContent='UPDATES DELAYED';d.textContent='Arrival predictions may be outdated — check WMATA';}else if(!arr.length||mode==='error'){s.classList.add('unknown');h.textContent=mode==='error'?'LIVE DATA UNAVAILABLE':'NO ARRIVALS LISTED';d.textContent=mode==='error'?'Check connection and API settings':'WMATA may not have predictions for upcoming service';}else{const walk=readNum('walk',5),buffer=readNum('buffer',1),leave=arr[0].m-walk-buffer;if(leave>5){h.textContent=`LEAVE IN ${leave} MIN`;d.textContent=`${walk}-minute walk · ${buffer}-minute buffer`;}else if(leave>0){s.classList.add('soon');h.textContent=`LEAVE IN ${leave} MIN`;d.textContent='Get ready — your bus is approaching';}else{s.classList.add('now');h.textContent='LEAVE NOW';d.textContent=arr[0].m<=walk?'Bus is close — you may miss it':`Allow ${walk} min to walk to the stop`;}}$('modePill').textContent=mode==='demo'?'DEMO MODE':mode==='live'?(stale?'STALE DATA':'LIVE DATA'):'OFFLINE';$('dot').className='dot '+(mode==='live'?'live':mode==='demo'?'demo':'');$('connection').textContent=mode==='demo'?'SIMULATED ARRIVAL TIMES':mode==='live'?(stale?'WMATA UPDATES DELAYED':'WMATA LIVE PREDICTIONS'):'NO LIVE CONNECTION';$('updated').textContent=mode==='demo'?'Demo mode · Not live data':lastUpdate?'Last successful update '+new Date(lastUpdate).toLocaleTimeString('en-US',{timeZone:'America/New_York'}):'Awaiting first update';$('demoControl').classList.toggle('active',mode==='demo');$('refreshBtn').textContent=mode==='live'?'Refresh Live':'Connect Live';}
-async function fetchLive(){if(working)return;working=true;const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);$('error').textContent='';try{const response=await fetch('api/arrivals.php',{cache:'no-store',signal:controller.signal});const json=await response.json().catch(()=>{throw new Error(`Server returned HTTP ${response.status} instead of valid JSON. Check PHP setup.`)});if(!response.ok)throw new Error(json.error||`Server returned HTTP ${response.status}`);if(!Array.isArray(json.Predictions))throw new Error('Response did not contain predictions.');predictions=json.Predictions.filter(p=>String(p.RouteID||'').trim().toUpperCase()===ROUTE&&(/west/i).test(String(p.DirectionText||''))).map(p=>({m:Number(p.Minutes),id:String(p.VehicleID||'')})).filter(p=>Number.isFinite(p.m)&&p.m>=0).sort((a,b)=>a.m-b.m);lastUpdate=Date.now();mode='live';render()}catch(e){mode='error';predictions=[];$('error').textContent=`Live connection failed: ${e.name==='AbortError'?'request timed out':e.message}. Check that arrivals.php is deployed and your private WMATA key is configured.`;render()}finally{working=false;clearTimeout(timeout)}}function connect(){clearInterval(pollId);fetchLive();pollId=setInterval(()=>{fetchLive()},30000)}function demo(){clearInterval(pollId);pollId=null;mode='demo';predictions=[];demoSet=Date.now();$('error').textContent='';render()}$('applyBtn').addEventListener('click',connect);$('refreshBtn').addEventListener('click',()=>mode==='live'?fetchLive():connect());$('demoBtn').addEventListener('click',demo);$('demoArrival').addEventListener('input',e=>{demoMinutes=Number(e.target.value);demoSet=Date.now();$('demoValue').textContent=demoMinutes+' min';if(mode!=='demo')demo();render()});$('walk').addEventListener('input',render);$('buffer').addEventListener('input',render);$('fullBtn').addEventListener('click',()=>{if(!document.fullscreenElement)$('arrivals').closest('.board').requestFullscreen?.();else document.exitFullscreen?.()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode==='live')fetchLive()});setInterval(render,10000);render();if(location.protocol==='https:'||location.protocol==='http:')connect();})();
-</script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C91 · P Street Departure Board</title>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#070707;
+  --frame:#23201a;
+  --frame-edge:#5b513f;
+  --panel:#11110f;
+  --panel-2:#171613;
+  --tile:#1c1b18;
+  --tile-top:#24231f;
+  --tile-bot:#161512;
+  --hinge:#070707;
+  --divider:#514938;
+  --label:#9e947d;
+  --amber:#f2bf68;
+  --paper:#f2ecdf;
+  --green:#89d58a;
+  --yellow:#f0cb6e;
+  --red:#e58378;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(circle at top,#222018 0,#0a0a09 60%);color:var(--paper);font-family:Inter,Arial,Helvetica,sans-serif;min-height:100%}
+body{min-height:100vh}
+.shell{max-width:1180px;margin:0 auto;padding:28px 18px 56px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.eyebrow{color:var(--label);font-size:11px;letter-spacing:.28em;font-weight:700;text-transform:uppercase}
+h1{margin:10px 0 6px;font-size:clamp(26px,4vw,46px);letter-spacing:.07em;color:var(--amber)}
+.sub{color:#bdb5a4;font-size:14px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,input{font:inherit}
+button{border:1px solid #5b513f;background:#25221b;color:#f1d8aa;padding:10px 14px;border-radius:4px;cursor:pointer;box-shadow:inset 0 1px 0 #554c3d}
+button:hover{background:#302b23}
+button.primary{background:#d7a451;color:#15120d;border-color:#d7a451;font-weight:800}
+button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.badge{border:1px solid #5c513b;background:#2d261a;color:#efc174;border-radius:999px;padding:8px 10px;font-size:11px;font-weight:800;letter-spacing:.12em}
+.board{
+  border:8px solid var(--frame);
+  border-radius:10px;
+  background:linear-gradient(180deg,#11100e,#0b0b0a);
+  box-shadow:0 18px 60px rgba(0,0,0,.5), inset 0 0 0 2px #040404, inset 0 0 0 3px var(--frame-edge);
+  padding:20px 20px 18px;
+}
+.board:fullscreen{width:100vw;height:100vh;border-radius:0;padding:26px}
+.boardHead{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:2px solid var(--divider);padding-bottom:16px;margin-bottom:14px}
+.site{font-size:clamp(18px,3vw,30px);font-weight:900;letter-spacing:.18em;color:var(--amber)}
+.clock{font-family:"Courier New",monospace;color:#c7baa1;font-size:clamp(18px,2vw,24px);letter-spacing:.08em}
+.colheads,.rowWrap{display:grid;grid-template-columns:minmax(120px,.7fr) minmax(290px,2.2fr) minmax(180px,1fr);gap:14px;align-items:center}
+.colheads{padding:0 4px 10px;color:var(--label);font-size:10px;font-weight:800;letter-spacing:.24em}
+.colheads span:last-child{text-align:right;padding-right:2px}
+.rows{display:flex;flex-direction:column;gap:10px}
+.rowWrap{
+  padding:12px 12px;
+  border:1px solid #3b362c;
+  border-radius:4px;
+  background:linear-gradient(180deg,#141412,#0d0d0c);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03), inset 0 -1px 0 rgba(0,0,0,.7);
+}
+.rowWrap.dim{opacity:.72}
+.field{display:flex;align-items:center}
+.field.arrive{justify-content:flex-end}
+.flapGroup{display:flex;gap:3px;align-items:center;flex-wrap:nowrap}
+.char{
+  position:relative;
+  width:clamp(18px,1.95vw,26px);
+  height:clamp(28px,3vw,38px);
+  border-radius:3px;
+  overflow:hidden;
+  background:var(--tile);
+  border:1px solid #2e2a22;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.9);
+  flex:0 0 auto;
+}
+.char.space{background:transparent;border-color:transparent;box-shadow:none}
+.char::before,.char::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;
+  height:50%;
+  z-index:1;
+}
+.char::before{top:0;background:linear-gradient(180deg,var(--tile-top),#1d1c18 72%,#151410)}
+.char::after{bottom:0;background:linear-gradient(180deg,#181713,var(--tile-bot))}
+.char .top,.char .bottom{
+  position:absolute;
+  left:0;right:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:"Courier New",monospace;
+  font-weight:900;
+  color:var(--paper);
+  text-transform:uppercase;
+  text-shadow:0 1px 0 #000;
+  z-index:2;
+}
+.char .top{top:0;height:50%;font-size:clamp(18px,2vw,28px);padding-top:3px}
+.char .bottom{bottom:0;height:50%;font-size:clamp(18px,2vw,28px);padding-bottom:3px}
+.char .hinge{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);background:var(--hinge);box-shadow:0 1px 0 rgba(255,255,255,.05);z-index:3}
+.routeField .char{width:clamp(22px,2.4vw,30px);height:clamp(32px,3.3vw,42px)}
+.routeField .char .top,.routeField .char .bottom{font-size:clamp(20px,2.3vw,32px)}
+.arriveField .char{width:clamp(20px,2.15vw,28px);height:clamp(30px,3.1vw,40px)}
+.arriveField .char .top,.arriveField .char .bottom{font-size:clamp(19px,2.1vw,30px)}
+.accent .top,.accent .bottom{color:var(--amber)}
+.statusPanel{
+  margin-top:18px;
+  padding:16px 14px 12px;
+  border:1px solid #484133;
+  border-radius:4px;
+  background:linear-gradient(180deg,#131311,#0d0d0c);
+}
+.statusMeta{font-size:11px;color:var(--label);letter-spacing:.24em;font-weight:800;margin-bottom:12px}
+.statusBoard{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.statusBoard .flapGroup .char{width:clamp(22px,2.7vw,38px);height:clamp(34px,4.2vw,54px)}
+.statusBoard .flapGroup .char .top,.statusBoard .flapGroup .char .bottom{font-size:clamp(20px,2.7vw,36px)}
+.statusBoard.leave-soon .char .top,.statusBoard.leave-soon .char .bottom{color:var(--yellow)}
+.statusBoard.leave-now .char .top,.statusBoard.leave-now .char .bottom{color:var(--red)}
+.statusBoard.comfortable .char .top,.statusBoard.comfortable .char .bottom{color:var(--green)}
+.detail{margin-top:10px;text-align:center;color:#c6beaf;font-size:14px}
+.footerBar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:16px;color:#a89f8d;font-size:11px;letter-spacing:.08em}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:#777}.dot.live{background:#6fd596}.dot.demo{background:#e0ad62}.dot.offline{background:#d47c73}
+.settings{margin-top:22px;border:1px solid #423c30;background:#171614;border-radius:8px;padding:18px}
+.settings h2{margin:0 0 8px;font-size:18px;color:var(--amber)}
+.settings p{margin:0 0 12px;color:#b9b09f;font-size:13px;line-height:1.55}
+.fields{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.fieldCtrl{display:flex;flex-direction:column;gap:6px;min-width:130px}
+.fieldCtrl label{font-size:12px;color:#d0c4ab}
+.fieldCtrl input{background:#11110f;border:1px solid #4f4739;color:#f4eee1;padding:10px 12px;border-radius:4px;width:100%}
+.help{margin-top:12px;color:#938c7d;font-size:12px;line-height:1.6}
+.help a{color:#e6be76}
+.error{margin-top:12px;color:#ffb0a8;font-size:13px;line-height:1.55;white-space:pre-wrap}
+.demoControl{display:none;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid #353027;padding-top:14px;margin-top:14px}
+.demoControl.active{display:flex}
+.demoControl input{accent-color:var(--amber);flex:1;min-width:160px}
+.muted{color:#968e7e}
+.char.flip .top{animation:topFlip .34s ease-in forwards}
+.char.flip .bottom{animation:bottomFlip .34s ease-out forwards}
+@keyframes topFlip{0%{transform:perspective(220px) rotateX(0deg);filter:brightness(1)}100%{transform:perspective(220px) rotateX(-88deg);filter:brightness(.6)}}
+@keyframes bottomFlip{0%{transform:perspective(220px) rotateX(88deg);filter:brightness(.5)}100%{transform:perspective(220px) rotateX(0deg);filter:brightness(1)}}
+@media (max-width:900px){
+  .colheads,.rowWrap{grid-template-columns:1fr;gap:8px}
+  .field.arrive{justify-content:flex-start}
+  .colheads span:last-child{text-align:left}
+}
+@media (max-width:620px){
+  .shell{padding:16px 10px 44px}
+  .board{padding:14px 12px}
+  h1{font-size:28px}
+  .site{font-size:15px;letter-spacing:.11em}
+  .clock{font-size:15px}
+  .char{width:18px;height:28px}
+  .char .top,.char .bottom{font-size:18px}
+  .routeField .char,.statusBoard .flapGroup .char{width:20px;height:30px}
+  .routeField .char .top,.routeField .char .bottom,.statusBoard .flapGroup .char .top,.statusBoard .flapGroup .char .bottom{font-size:18px}
+}
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Washington · District of Columbia</div>
+      <h1>Metrobus Departure Board</h1>
+      <div class="sub">P St NW + 7th St NW · Stop 1001453 · West toward Georgetown</div>
+    </div>
+    <div class="toolbar">
+      <span class="badge" id="modePill">CONNECTING</span>
+      <button id="demoBtn">Demo</button>
+      <button id="refreshBtn" class="primary">Refresh Live</button>
+      <button id="fullBtn">Fullscreen</button>
+    </div>
+  </header>
+
+  <section class="board" id="board" aria-label="Bus departures">
+    <div class="boardHead">
+      <span class="site">P STREET · WESTBOUND</span>
+      <span class="clock" id="clock">--:--:--</span>
+    </div>
+
+    <div class="colheads">
+      <span>Route</span>
+      <span>Destination</span>
+      <span>Arrival</span>
+    </div>
+
+    <div class="rows" id="rows"></div>
+
+    <section class="statusPanel" aria-live="polite">
+      <div class="statusMeta">YOUR DEPARTURE STATUS</div>
+      <div class="statusBoard comfortable" id="statusBoard"></div>
+      <div class="detail" id="detail">Checking live arrival predictions…</div>
+    </section>
+
+    <div class="footerBar">
+      <span><span class="dot live" id="dot"></span><span id="connection">Connecting to WMATA live predictions</span></span>
+      <span id="updated">Awaiting first update</span>
+    </div>
+  </section>
+
+  <section class="settings" id="settings">
+    <h2>Board settings</h2>
+    <p>Live predictions come through your website’s private server endpoint, so your WMATA key never appears in the page source or browser requests.</p>
+    <div class="fields">
+      <div class="fieldCtrl">
+        <label for="walk">Walk (minutes)</label>
+        <input id="walk" type="number" min="1" max="30" value="5">
+      </div>
+      <div class="fieldCtrl">
+        <label for="buffer">Safety buffer (minutes)</label>
+        <input id="buffer" type="number" min="0" max="15" value="1">
+      </div>
+      <button id="applyBtn" class="primary">Reconnect live</button>
+    </div>
+    <div class="help">Live refresh: every 30 seconds while this page is open. WMATA prediction API: <a href="https://developer.wmata.com/apis" target="_blank" rel="noopener noreferrer">developer.wmata.com</a> · <a href="https://buseta.wmata.com/m/index?q=1001453" target="_blank" rel="noopener noreferrer">Official stop page</a></div>
+    <div id="error" class="error" role="alert"></div>
+    <div class="demoControl" id="demoControl">
+      <label for="demoArrival">Test a bus arrival:</label>
+      <input type="range" id="demoArrival" min="0" max="30" value="12">
+      <strong id="demoValue">12 min</strong>
+      <span class="muted">Demo only</span>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const ROUTE = 'C91';
+  const DESTINATION = 'GEORGETOWN';
+  const $ = id => document.getElementById(id);
+
+  let mode = 'loading';
+  let predictions = [];
+  let pollId = null;
+  let lastUpdate = null;
+  let working = false;
+  let demoMinutes = 12;
+  let demoSet = Date.now();
+  let previousSignature = '';
+  let forceCycle = false;
+  const wheel = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-';
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function cycleTile(tile, from, to, delay) {
+    if (reducedMotion.matches || from === to && !forceCycle) return;
+    const top = tile.querySelector('.top'), bottom = tile.querySelector('.bottom');
+    if (!top || !bottom) return;
+    let current = wheel.indexOf(from); if (current < 0) current = 0;
+    const target = Math.max(0, wheel.indexOf(to));
+    let steps = (target - current + wheel.length) % wheel.length;
+    if (steps < 5) steps += wheel.length;
+    steps = Math.min(steps, 19);
+    const frames = [];
+    for (let i=0; i<steps-1; i++) frames.push(wheel[(current + i + 1) % wheel.length]);
+    frames.push(to);
+    top.textContent = from; bottom.textContent = from;
+    frames.forEach((letter, i) => setTimeout(() => {
+      top.textContent = letter; bottom.textContent = letter;
+      tile.classList.remove('flip'); void tile.offsetWidth; tile.classList.add('flip');
+    }, delay + i * 68));
+  }
+
+  const widths = { route: 3, dest: 12, arrive: 6, status: 14 };
+  // Each refresh winds the letter drums through intermediate characters.
+
+  function readNum(id, fallback) {
+    const v = Number($(id).value);
+    return Number.isFinite(v) ? Math.max(0, v) : fallback;
+  }
+
+  function nowClock() {
+    return new Date().toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'America/New_York'
+    });
+  }
+
+  function padded(text, len, align = 'left') {
+    let value = String(text ?? '').toUpperCase().slice(0, len);
+    if (value.length < len) {
+      value = align === 'right' ? value.padStart(len, ' ') : value.padEnd(len, ' ');
+    }
+    return value;
+  }
+
+  function minsLabel(m) {
+    if (m <= 0) return ' DUE  ';
+    return padded(`${m}MIN`, widths.arrive, 'right');
+  }
+
+  function getBuses() {
+    if (mode === 'demo') {
+      const elapsed = (Date.now() - demoSet) / 60000;
+      return [demoMinutes, demoMinutes + 16, demoMinutes + 30].map((m, i) => ({
+        m: Math.max(0, Math.ceil(m - elapsed)),
+        id: 'demo-' + i
+      }));
+    }
+    return predictions
+      .map(p => ({ ...p, m: Math.max(0, Math.ceil(p.m - ((Date.now() - lastUpdate) / 60000))) }))
+      .sort((a, b) => a.m - b.m);
+  }
+
+  function createChar(char, extraClass = '', shouldFlip = false) {
+    const tile = document.createElement('span');
+    tile.className = 'char' + (char === ' ' ? ' space' : '') + (extraClass ? ' ' + extraClass : '') + (shouldFlip ? ' flip' : '');
+    const top = document.createElement('span');
+    top.className = 'top';
+    top.textContent = char;
+    const bottom = document.createElement('span');
+    bottom.className = 'bottom';
+    bottom.textContent = char;
+    const hinge = document.createElement('span');
+    hinge.className = 'hinge';
+    tile.append(top, bottom, hinge);
+    return tile;
+  }
+
+  function createFlapGroup(text, width, opts = {}) {
+    const group = document.createElement('div');
+    group.className = 'flapGroup';
+    const previous = opts.previous || '';
+    const normalized = padded(text, width, opts.align || 'left');
+    const priorNorm = padded(previous, width, opts.align || 'left');
+    [...normalized].forEach((char, index) => {
+      const shouldFlip = opts.animate && char !== priorNorm[index];
+      const tile = createChar(char, opts.accent ? 'accent' : '', shouldFlip);
+      group.appendChild(tile);
+      if (opts.animate && char !== ' ' && (opts.force || char !== priorNorm[index])) {
+        cycleTile(tile, priorNorm[index] || ' ', char, 35 * index + (opts.rowIndex || 0) * 90);
+      }
+    });
+    return { element: group, normalized };
+  }
+
+  function renderRows(rows, animate) {
+    const holder = $('rows');
+    holder.replaceChildren();
+
+    rows.forEach((row, index) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'rowWrap' + (index ? ' dim' : '');
+
+      const routeField = document.createElement('div');
+      routeField.className = 'field routeField';
+      routeField.appendChild(createFlapGroup(row.route, widths.route, {
+        previous: row.prevRoute,
+        animate,
+        force: forceCycle,
+        rowIndex: index,
+        accent: true
+      }).element);
+
+      const destField = document.createElement('div');
+      destField.className = 'field destField';
+      destField.appendChild(createFlapGroup(row.dest, widths.dest, {
+        previous: row.prevDest,
+        animate,
+        force: forceCycle,
+        rowIndex: index
+      }).element);
+
+      const arrField = document.createElement('div');
+      arrField.className = 'field arrive arriveField';
+      arrField.appendChild(createFlapGroup(row.arrive, widths.arrive, {
+        previous: row.prevArrive,
+        animate,
+        force: forceCycle,
+        rowIndex: index,
+        align: 'right',
+        accent: true
+      }).element);
+
+      wrap.append(routeField, destField, arrField);
+      holder.appendChild(wrap);
+    });
+  }
+
+  function renderStatus(text, detail, tone, previousText, animate) {
+    const statusBoard = $('statusBoard');
+    statusBoard.className = 'statusBoard ' + tone;
+    statusBoard.replaceChildren();
+    statusBoard.appendChild(createFlapGroup(text, widths.status, {
+      previous: previousText,
+      animate,
+      force: forceCycle,
+      rowIndex: 3
+    }).element);
+    $('detail').textContent = detail;
+  }
+
+  function render() {
+    $('clock').textContent = nowClock();
+    const arr = getBuses();
+    const stale = mode === 'live' && lastUpdate && (Date.now() - lastUpdate > 90000);
+
+    const rows = [];
+    if (!arr.length) {
+      rows.push({ route: ROUTE, dest: 'NO SERVICE', arrive: '  --  ' });
+    } else {
+      for (let i = 0; i < Math.min(3, arr.length); i++) {
+        rows.push({ route: ROUTE, dest: DESTINATION, arrive: minsLabel(arr[i].m) });
+      }
+      while (rows.length < 3) rows.push({ route: ROUTE, dest: DESTINATION, arrive: '      ' });
+    }
+
+    const signature = JSON.stringify({ rows, mode, stale, walk: $('walk').value, buffer: $('buffer').value, first: arr[0]?.m ?? null });
+    const animate = signature !== previousSignature;
+
+    const previousRows = previousSignature ? JSON.parse(previousSignature).rows : [];
+    const withPrevious = rows.map((row, idx) => ({
+      ...row,
+      prevRoute: previousRows[idx]?.route || '',
+      prevDest: previousRows[idx]?.dest || '',
+      prevArrive: previousRows[idx]?.arrive || ''
+    }));
+
+    if (animate || forceCycle) renderRows(withPrevious, true);
+
+    const walk = readNum('walk', 5);
+    const buffer = readNum('buffer', 1);
+    let statusText = ' STANDBY      ';
+    let detail = 'Checking live arrival predictions…';
+    let tone = 'comfortable';
+
+    if (stale) {
+      statusText = 'UPDATE DELAYED';
+      detail = 'Arrival predictions may be outdated — check WMATA';
+      tone = 'leave-soon';
+    } else if (!arr.length || mode === 'error') {
+      statusText = mode === 'error' ? 'LIVE OFFLINE ' : 'NO ARRIVALS  ';
+      detail = mode === 'error'
+        ? 'Check connection and API settings'
+        : 'WMATA may not have predictions for upcoming service';
+      tone = 'leave-now';
+    } else {
+      const leave = arr[0].m - walk - buffer;
+      if (leave > 5) {
+        statusText = padded(`LEAVE ${leave}MIN`, widths.status, 'left');
+        detail = `${walk}-minute walk · ${buffer}-minute buffer`;
+        tone = 'comfortable';
+      } else if (leave > 0) {
+        statusText = padded(`LEAVE ${leave}MIN`, widths.status, 'left');
+        detail = 'Get ready — your bus is approaching';
+        tone = 'leave-soon';
+      } else {
+        statusText = ' LEAVE NOW   ';
+        detail = arr[0].m <= walk ? 'Bus is close — you may miss it' : `Allow ${walk} min to walk to the stop`;
+        tone = 'leave-now';
+      }
+    }
+
+    const previousStatus = previousSignature ? JSON.parse(previousSignature).statusText || '' : '';
+    if (animate || forceCycle) renderStatus(statusText, detail, tone, previousStatus, true);
+    else $('detail').textContent = detail;
+
+    $('modePill').textContent = mode === 'demo' ? 'DEMO MODE' : mode === 'live' ? (stale ? 'STALE DATA' : 'LIVE DATA') : mode === 'loading' ? 'CONNECTING' : 'OFFLINE';
+    $('dot').className = 'dot ' + (mode === 'demo' ? 'demo' : mode === 'live' ? 'live' : 'offline');
+    $('connection').textContent = mode === 'demo'
+      ? 'Simulated arrival times'
+      : mode === 'live'
+        ? (stale ? 'WMATA updates delayed' : 'WMATA live predictions')
+        : mode === 'loading'
+          ? 'Connecting to WMATA live predictions'
+          : 'No live connection';
+    $('updated').textContent = mode === 'demo'
+      ? 'Demo mode · Not live data'
+      : lastUpdate
+        ? 'Last successful update ' + new Date(lastUpdate).toLocaleTimeString('en-US', { timeZone: 'America/New_York' })
+        : 'Awaiting first update';
+    $('demoControl').classList.toggle('active', mode === 'demo');
+
+    previousSignature = JSON.stringify({ rows, statusText, mode, stale, walk: $('walk').value, buffer: $('buffer').value, first: arr[0]?.m ?? null });
+    forceCycle = false;
+  }
+
+  async function fetchLive(force = false) {
+    if (force) forceCycle = true;
+    if (working) { if (force) render(); return; }
+    working = true;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    $('error').textContent = '';
+
+    try {
+      const response = await fetch('api/arrivals.php', { cache: 'no-store', signal: controller.signal });
+      const json = await response.json().catch(() => {
+        throw new Error(`Server returned HTTP ${response.status} instead of valid JSON. Check PHP setup.`);
+      });
+      if (!response.ok) throw new Error(json.error || `Server returned HTTP ${response.status}`);
+      if (!Array.isArray(json.Predictions)) throw new Error('Response did not contain predictions.');
+
+      predictions = json.Predictions
+        .filter(p => String(p.RouteID || '').trim().toUpperCase() === ROUTE && (/west/i).test(String(p.DirectionText || '')))
+        .map(p => ({ m: Number(p.Minutes), id: String(p.VehicleID || '') }))
+        .filter(p => Number.isFinite(p.m) && p.m >= 0)
+        .sort((a, b) => a.m - b.m);
+
+      lastUpdate = Date.now();
+      mode = 'live';
+      render();
+    } catch (e) {
+      mode = 'error';
+      predictions = [];
+      $('error').textContent = `Live connection failed: ${e.name === 'AbortError' ? 'request timed out' : e.message}. Check that arrivals.php is deployed and your private WMATA key is configured.`;
+      render();
+    } finally {
+      working = false;
+      clearTimeout(timeout);
+    }
+  }
+
+  function connect(force = false) {
+    clearInterval(pollId);
+    fetchLive(force);
+    pollId = setInterval(() => {
+      if (!document.hidden) fetchLive();
+    }, 30000);
+  }
+
+  function demo() {
+    clearInterval(pollId);
+    pollId = null;
+    mode = 'demo';
+    predictions = [];
+    demoSet = Date.now();
+    $('error').textContent = '';
+    render();
+  }
+
+  $('applyBtn').addEventListener('click', connect);
+  $('refreshBtn').addEventListener('click', () => mode === 'live' ? fetchLive(true) : connect(true));
+  $('demoBtn').addEventListener('click', demo);
+  $('demoArrival').addEventListener('input', e => {
+    demoMinutes = Number(e.target.value);
+    demoSet = Date.now();
+    $('demoValue').textContent = demoMinutes + ' min';
+    if (mode !== 'demo') demo();
+    render();
+  });
+  $('walk').addEventListener('input', render);
+  $('buffer').addEventListener('input', render);
+  $('fullBtn').addEventListener('click', () => {
+    const board = $('board');
+    if (!document.fullscreenElement) board.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && mode === 'live') fetchLive();
+  });
+
+  setInterval(render, 10000);
+  render();
+  connect();
+})();
+</script>
+</body>
+</html>
