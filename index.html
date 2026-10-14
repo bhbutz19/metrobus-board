@@ -416,16 +416,34 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       render();
     }catch(e){scheduleAvailable=false;schedule=[];render();}
   }
-  function displayBuses(live){
+  function displayBuses(live) {
     const now=Date.now();
     const combined=live.map(p=>({...p,kind:'live',time:now+p.m*60000}));
-    const scheduled=schedule.filter(p=>p.time>now-30000 && p.time<now+24*3600000);
-    for(const p of scheduled){
-      // Without stable trip IDs in both feeds, nearby arrivals may be the same bus.
-      if(combined.some(b=>b.id&&p.tripId&&b.tripId===p.tripId || Math.abs(b.time-p.time)<4*60000))continue;
-      combined.push({m:Math.max(0,Math.ceil((p.time-now)/60000)),time:p.time,kind:'scheduled',tripId:p.tripId});
+    const future=schedule.filter(p=>p.time>now-30000&&p.time<now+24*3600000);
+    // Match each live vehicle with at most one scheduled trip. Prefer exact trip IDs.
+    const claimed=new Set();
+    for(const b of combined){
+      let match=future.findIndex((p,i)=>!claimed.has(i)&&b.tripId&&p.tripId&&b.tripId===p.tripId);
+      if(match<0){
+        let best=5*60000;
+        future.forEach((p,i)=>{
+          if(claimed.has(i))return;
+          const delta=Math.abs(p.time-b.time);
+          if(delta<best){best=delta;match=i;}
+        });
+      }
+      if(match>=0)claimed.add(match);
     }
+    future.forEach((p,i)=>{
+      if(!claimed.has(i))combined.push({m:Math.max(0,Math.ceil((p.time-now)/60000)),time:p.time,kind:'scheduled',tripId:p.tripId});
+    });
     return combined.sort((a,b)=>a.time-b.time).slice(0,3);
+  }
+  function scheduledLabel(time){
+    const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',hour12:true}).formatToParts(new Date(time));
+    const hour=parts.find(p=>p.type==='hour')?.value||'';
+    const minute=parts.find(p=>p.type==='minute')?.value||'';
+    return padded(hour+':'+minute+'S',widths.arrive,'right');
   }
   function createChar(char, extraClass = '', shouldFlip = false) {
     const tile = document.createElement('span');
@@ -520,7 +538,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
     const rows = [];
     for(const bus of display){
-      const label=bus.kind==='scheduled' ? padded(String(new Date(bus.time).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',hour12:false})).replace(':','')+'S',6,'right') : minsLabel(bus.m);
+      const label=bus.kind==='scheduled' ? scheduledLabel(bus.time) : minsLabel(bus.m);
       rows.push({route:ROUTE,dest:DESTINATION,arrive:label});
     }
     while(rows.length<3)rows.push({route:ROUTE,dest:DESTINATION,arrive:'NO ETA'});
