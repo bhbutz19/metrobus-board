@@ -468,6 +468,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     });
     return combined.sort((a,b)=>a.time-b.time).slice(0,3);
   }
+  function destinationLabel(value){
+    const raw=String(value||'').trim().toUpperCase();
+    // WMATA's live DirectionText often reads "WEST TO GEORGETOWN".
+    // Keep the actual terminus instead of truncating the directional prefix.
+    const cleaned=raw.replace(/^(NORTH|SOUTH|EAST|WEST)(BOUND)?\s+TO\s+/,'').replace(/^(TO)\s+/,'').trim();
+    return cleaned||raw||'UNKNOWN';
+  }
   function scheduledLabel(time){
     const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',hour12:true}).formatToParts(new Date(time));
     const hour=parts.find(p=>p.type==='hour')?.value||'';
@@ -568,7 +575,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     const rows = [];
     for(const bus of display){
       const label=bus.kind==='scheduled' ? scheduledLabel(bus.time) : minsLabel(bus.m);
-      rows.push({route:bus.route||'--',dest:bus.dest||'UNKNOWN',arrive:label});
+      rows.push({route:bus.route||'--',dest:destinationLabel(bus.dest),arrive:label});
     }
     while(rows.length<3)rows.push({route:'',dest:'',arrive:'NO ETA'});
 
