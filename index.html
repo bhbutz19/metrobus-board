@@ -433,7 +433,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
   function nowClock() {
     return new Date().toLocaleTimeString('en-US', {
-      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'America/New_York'
+      hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'America/New_York'
     });
   }
 
