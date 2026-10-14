@@ -365,7 +365,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   let demoSet = Date.now();
   let previousSignature = '';
   let forceCycle = false;
-  let alertEnabled=false, alertTestUntil=0, previousAlertKey=null, testFlashActive=false;
+  let alertEnabled=false, alertTestUntil=0, wasUrgent=false, testFlashActive=false;
   const wheel = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let soundEnabled = false, audioCtx = null, lastClack = 0;
@@ -657,8 +657,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     }
 
     const isUrgent=mode==='live'&&!stale&&arr.length>0&&display[0]?.kind==='live'&&tone==='leave-now';
-    const alertKey=isUrgent ? stopID+'|'+(arr[0].tripId||arr[0].id||arr[0].route+'-'+Math.round((lastUpdate||Date.now())/1800000)) : null;
-    if(alertKey!==previousAlertKey){previousAlertKey=alertKey;if(isUrgent&&alertEnabled)alertTestUntil=Date.now()+12000;}
+    // Re-alert whenever the mechanical board actually updates during LEAVE NOW,
+    // not just on the first transition to the urgent state.
+    const newlyUrgent=isUrgent&&!wasUrgent;
+    const flapUpdate=isUrgent&&(animate||forceCycle);
+    if(alertEnabled&&(newlyUrgent||flapUpdate))alertTestUntil=Date.now()+12000;
+    wasUrgent=isUrgent;
+    if(!isUrgent&&!testFlashActive)alertTestUntil=0;
     if(alertTestUntil<=Date.now())testFlashActive=false;
     const flashing=alertTestUntil>Date.now() && (alertEnabled || testFlashActive);
     $('board').classList.toggle('departureFlash',flashing);
