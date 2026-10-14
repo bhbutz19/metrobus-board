@@ -299,6 +299,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
   let mode = 'loading';
   let predictions = [];
+  let schedule = [], lastScheduleFetch=0, scheduleAvailable=false;
   let pollId = null;
   let lastUpdate = null;
   let working = false;
@@ -402,6 +403,30 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       .sort((a, b) => a.m - b.m);
   }
 
+  async function fetchSchedule() {
+    if(Date.now()-lastScheduleFetch<240000)return;
+    lastScheduleFetch=Date.now();
+    try {
+      const response=await fetch('api/schedule.php',{cache:'no-store'});
+      if(!response.ok)throw Error('schedule unavailable');
+      const json=await response.json();
+      if(!Array.isArray(json.ScheduledArrivals))throw Error('invalid schedule');
+      schedule=json.ScheduledArrivals.filter(t=>Number.isFinite(Number(t.time))).map(t=>({time:Number(t.time),tripId:String(t.tripId||'')})).sort((a,b)=>a.time-b.time);
+      scheduleAvailable=true;
+      render();
+    }catch(e){scheduleAvailable=false;schedule=[];render();}
+  }
+  function displayBuses(live){
+    const now=Date.now();
+    const combined=live.map(p=>({...p,kind:'live',time:now+p.m*60000}));
+    const scheduled=schedule.filter(p=>p.time>now-30000 && p.time<now+24*3600000);
+    for(const p of scheduled){
+      // Without stable trip IDs in both feeds, nearby arrivals may be the same bus.
+      if(combined.some(b=>b.id&&p.tripId&&b.tripId===p.tripId || Math.abs(b.time-p.time)<4*60000))continue;
+      combined.push({m:Math.max(0,Math.ceil((p.time-now)/60000)),time:p.time,kind:'scheduled',tripId:p.tripId});
+    }
+    return combined.sort((a,b)=>a.time-b.time).slice(0,3);
+  }
   function createChar(char, extraClass = '', shouldFlip = false) {
     const tile = document.createElement('span');
     tile.className = 'char' + (char === ' ' ? ' space' : '') + (extraClass ? ' ' + extraClass : '');
@@ -490,17 +515,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   function render() {
     $('clock').textContent = nowClock();
     const arr = getBuses();
+    const display = mode === 'live' && scheduleAvailable ? displayBuses(arr) : arr.map(b=>({...b,kind:'live'}));
     const stale = mode === 'live' && lastUpdate && (Date.now() - lastUpdate > 90000);
 
     const rows = [];
-    if (!arr.length) {
-      rows.push({ route: ROUTE, dest: 'NO SERVICE', arrive: '  --  ' });
-    } else {
-      for (let i = 0; i < Math.min(3, arr.length); i++) {
-        rows.push({ route: ROUTE, dest: DESTINATION, arrive: minsLabel(arr[i].m) });
-      }
-      while (rows.length < 3) rows.push({ route: ROUTE, dest: DESTINATION, arrive: 'NO ETA' });
+    for(const bus of display){
+      const label=bus.kind==='scheduled' ? padded(String(new Date(bus.time).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',hour12:false})).replace(':','')+'S',6,'right') : minsLabel(bus.m);
+      rows.push({route:ROUTE,dest:DESTINATION,arrive:label});
     }
+    while(rows.length<3)rows.push({route:ROUTE,dest:DESTINATION,arrive:scheduleAvailable&&display.length===0?'END SV':'NO ETA'});
 
     const signature = JSON.stringify({ rows, mode, stale, walk: $('walk').value, buffer: $('buffer').value, first: arr[0]?.m ?? null });
     const animate = signature !== previousSignature;
@@ -566,6 +589,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       : lastUpdate
         ? 'Last successful update ' + new Date(lastUpdate).toLocaleTimeString('en-US', { timeZone: 'America/New_York' })
         : 'Awaiting first update';
+    // Schedule labels ending in S indicate scheduled, not real-time arrivals.
     // Demo controls are hidden in the deployed production layout.
 
     previousSignature = JSON.stringify({ rows, statusText, mode, stale, walk: $('walk').value, buffer: $('buffer').value, first: arr[0]?.m ?? null });
@@ -590,13 +614,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
       predictions = json.Predictions
         .filter(p => String(p.RouteID || '').trim().toUpperCase() === ROUTE && (/west/i).test(String(p.DirectionText || '')))
-        .map(p => ({ m: Number(p.Minutes), id: String(p.VehicleID || '') }))
+        .map(p => ({ m: Number(p.Minutes), id: String(p.VehicleID || ''), tripId:String(p.TripID||'') }))
         .filter(p => Number.isFinite(p.m) && p.m >= 0)
         .sort((a, b) => a.m - b.m);
 
       lastUpdate = Date.now();
       mode = 'live';
       render();
+      fetchSchedule();
     } catch (e) {
       mode = 'error';
       predictions = [];
@@ -611,8 +636,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   function connect(force = false) {
     clearInterval(pollId);
     fetchLive(force);
+    fetchSchedule();
     pollId = setInterval(() => {
       if (!document.hidden) fetchLive();
+      fetchSchedule();
     }, 30000);
   }
 
