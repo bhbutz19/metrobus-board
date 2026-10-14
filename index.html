@@ -252,7 +252,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     <div>
       <div class="eyebrow">Washington · District of Columbia</div>
       <h1><span class="titlePlate">METROBUS</span> <span class="titlePlate">DEPARTURES</span></h1>
-      <div class="sub">P St NW + 7th St NW · Stop 1001453 · West toward Georgetown</div>
+      <div class="sub" id="stopDescription">P St NW + 7th St NW · Stop 1001453 · West toward Georgetown</div>
     </div>
     <div class="toolbar">
       <span class="badge" id="modePill">CONNECTING</span>
@@ -291,6 +291,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     <h2>Board settings</h2>
     <p>Live predictions come through your website’s private server endpoint, so your WMATA key never appears in the page source or browser requests.</p>
     <div class="fields">
+      <div class="fieldCtrl"><label for="stopInput">WMATA Stop Number</label><input id="stopInput" inputmode="numeric" pattern="[0-9]{7}" maxlength="7" value="1001453" placeholder="7-digit stop ID"></div>
+      <button id="saveStop" class="primary">Change stop</button>
       <div class="fieldCtrl">
         <label for="walk">Walk (minutes)</label>
         <input id="walk" type="number" min="1" max="30" value="5">
@@ -316,8 +318,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 <script>
 (() => {
   'use strict';
-  const ROUTE = 'C91';
-  const DESTINATION = 'GEORGETOWN';
+  const DEFAULT_STOP='1001453';
+  let stopID=DEFAULT_STOP;
+  try {const stored=localStorage.getItem('metrobus-stop');if(/^[0-9]{7}$/.test(stored||''))stopID=stored;} catch(e) {}
   const $ = id => document.getElementById(id);
 
   let mode = 'loading';
@@ -387,7 +390,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     }, delay + i * 68));
   }
 
-  const widths = { route: 3, dest: 12, arrive: 6, status: 14 };
+  const widths = { route: 4, dest: 12, arrive: 6, status: 14 };
   // Each refresh winds the letter drums through intermediate characters.
 
   function readNum(id, fallback) {
@@ -431,11 +434,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     if(Date.now()-lastScheduleFetch<240000)return;
     lastScheduleFetch=Date.now();
     try {
-      const response=await fetch('api/schedule.php',{cache:'no-store'});
+      const response=await fetch('api/schedule.php?stop='+encodeURIComponent(stopID),{cache:'no-store'});
       if(!response.ok)throw Error('schedule unavailable');
       const json=await response.json();
       if(!Array.isArray(json.ScheduledArrivals))throw Error('invalid schedule');
-      schedule=json.ScheduledArrivals.filter(t=>Number.isFinite(Number(t.time))).map(t=>({time:Number(t.time),tripId:String(t.tripId||'')})).sort((a,b)=>a.time-b.time);
+      schedule=json.ScheduledArrivals.filter(t=>Number.isFinite(Number(t.time))).map(t=>({time:Number(t.time),tripId:String(t.tripId||''),route:String(t.route||''),dest:String(t.headsign||'')})).sort((a,b)=>a.time-b.time);
       scheduleAvailable=true;
       render();
     }catch(e){scheduleAvailable=false;schedule=[];render();}
@@ -447,11 +450,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     // Match each live vehicle with at most one scheduled trip. Prefer exact trip IDs.
     const claimed=new Set();
     for(const b of combined){
-      let match=future.findIndex((p,i)=>!claimed.has(i)&&b.tripId&&p.tripId&&b.tripId===p.tripId);
+      let match=future.findIndex((p,i)=>!claimed.has(i)&&b.tripId&&p.tripId&&b.tripId===p.tripId&&b.route===p.route);
       if(match<0){
         let best=5*60000;
         future.forEach((p,i)=>{
-          if(claimed.has(i))return;
+          if(claimed.has(i)||p.route!==b.route)return;
           const delta=Math.abs(p.time-b.time);
           if(delta<best){best=delta;match=i;}
         });
@@ -459,7 +462,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       if(match>=0)claimed.add(match);
     }
     future.forEach((p,i)=>{
-      if(!claimed.has(i))combined.push({m:Math.max(0,Math.ceil((p.time-now)/60000)),time:p.time,kind:'scheduled',tripId:p.tripId});
+      if(!claimed.has(i))combined.push({m:Math.max(0,Math.ceil((p.time-now)/60000)),time:p.time,kind:'scheduled',tripId:p.tripId,route:p.route,dest:p.dest});
     });
     return combined.sort((a,b)=>a.time-b.time).slice(0,3);
   }
@@ -563,9 +566,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     const rows = [];
     for(const bus of display){
       const label=bus.kind==='scheduled' ? scheduledLabel(bus.time) : minsLabel(bus.m);
-      rows.push({route:ROUTE,dest:DESTINATION,arrive:label});
+      rows.push({route:bus.route||'--',dest:bus.dest||'UNKNOWN',arrive:label});
     }
-    while(rows.length<3)rows.push({route:ROUTE,dest:DESTINATION,arrive:'NO ETA'});
+    while(rows.length<3)rows.push({route:'',dest:'',arrive:'NO ETA'});
 
     const signature = JSON.stringify({ rows, mode, stale, walk: $('walk').value, buffer: $('buffer').value, first: arr[0]?.m ?? null });
     const animate = signature !== previousSignature;
@@ -645,7 +648,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     $('error').textContent = '';
 
     try {
-      const response = await fetch('api/arrivals.php', { cache: 'no-store', signal: controller.signal });
+      const response = await fetch('api/arrivals.php?stop='+encodeURIComponent(stopID), { cache: 'no-store', signal: controller.signal });
       const json = await response.json().catch(() => {
         throw new Error(`Server returned HTTP ${response.status} instead of valid JSON. Check PHP setup.`);
       });
@@ -653,8 +656,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       if (!Array.isArray(json.Predictions)) throw new Error('Response did not contain predictions.');
 
       predictions = json.Predictions
-        .filter(p => String(p.RouteID || '').trim().toUpperCase() === ROUTE && (/west/i).test(String(p.DirectionText || '')))
-        .map(p => ({ m: Number(p.Minutes), id: String(p.VehicleID || ''), tripId:String(p.TripID||'') }))
+        .map(p => ({ m: Number(p.Minutes), id: String(p.VehicleID || ''), tripId:String(p.TripID||''),route:String(p.RouteID||''),dest:String(p.DirectionText||p.TripHeadsign||'') }))
         .filter(p => Number.isFinite(p.m) && p.m >= 0)
         .sort((a, b) => a.m - b.m);
 
@@ -693,6 +695,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     render();
   }
 
+  $('stopInput').value=stopID;
+  function changeStop(){
+    const next=$('stopInput').value.trim();
+    if(!/^[0-9]{7}$/.test(next)){$('error').textContent='Please enter a seven-digit WMATA stop number.';return;}
+    if(next===stopID){toggleSettings(false);return;}
+    stopID=next;try{localStorage.setItem('metrobus-stop',stopID)}catch(e){}
+    $('stopDescription').textContent='WMATA stop '+stopID+' · All routes and directions';
+    predictions=[];schedule=[];scheduleAvailable=false;lastUpdate=null;lastScheduleFetch=0;mode='loading';previousSignature='';
+    $('error').textContent='';render();connect(true);toggleSettings(false);
+  }
+  $('saveStop').addEventListener('click',changeStop);
+  $('stopInput').addEventListener('keydown',e=>{if(e.key==='Enter')changeStop()});
+  if(stopID!==DEFAULT_STOP)$('stopDescription').textContent='WMATA stop '+stopID+' · All routes and directions';
   $('applyBtn').addEventListener('click', connect);
   $('soundToggle').addEventListener('change',e=>setSound(e.target.checked));
   $('refreshBtn').addEventListener('click', () => mode === 'live' ? fetchLive(true) : connect(true));
