@@ -244,6 +244,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 }
 .char.flip .hinge{background:#0f0f0f}
 @media(prefers-reduced-motion:reduce){.char.flip{animation:none}}
+.routeFilter{flex:1 1 100%;border-top:1px solid #524937;padding-top:13px;margin-top:3px}.routeHeading{font-weight:800;color:var(--amber);font-size:13px;margin-bottom:10px}.routeOption{display:inline-flex;align-items:center;gap:7px;margin:0 12px 10px 0;padding:8px 10px;border:1px solid #4c4335;border-radius:4px;color:#f1e6d0;font-size:13px;cursor:pointer}.routeOption input{accent-color:#d7a451}#allRoutes{padding:7px 10px;font-size:12px}
 </style>
 </head>
 <body>
@@ -302,6 +303,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
         <input id="buffer" type="number" min="0" max="15" value="1">
       </div>
       <button id="applyBtn" class="primary">Reconnect live</button>
+      <div class="routeFilter"><div class="routeHeading">Visible routes</div><div id="routeChoices">Loading routes…</div><button id="allRoutes" type="button">Show all routes</button></div>
       <label class="soundToggle"><input id="soundToggle" type="checkbox"> Mechanical clack sound <span id="soundState">Muted</span></label>
     </div>
     <div class="help">Live refresh: every 30 seconds while this page is open. WMATA prediction API: <a href="https://developer.wmata.com/apis" target="_blank" rel="noopener noreferrer">developer.wmata.com</a> · <a href="https://buseta.wmata.com/m/index?q=1001453" target="_blank" rel="noopener noreferrer">Official stop page</a></div>
@@ -326,6 +328,29 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   let mode = 'loading';
   let predictions = [];
   let schedule = [], lastScheduleFetch=0, scheduleAvailable=false;
+  let availableRoutes=new Set(), selectedRoutes=null;
+  function loadRouteChoice(){try{const v=JSON.parse(localStorage.getItem("metrobus-routes-"+stopID));selectedRoutes=Array.isArray(v)?new Set(v):null;}catch(e){selectedRoutes=null;}}
+  function routeVisible(route){return selectedRoutes===null||selectedRoutes.has(String(route).toUpperCase());}
+  function updateRouteChoices(){
+    const holder=$('routeChoices');holder.replaceChildren();
+    if(!availableRoutes.size){holder.textContent="Routes will appear when WMATA data loads.";return;}
+    for(const route of [...availableRoutes].sort()){
+      const label=document.createElement("label");label.className="routeOption";
+      const checkbox=document.createElement("input");checkbox.type="checkbox";checkbox.checked=routeVisible(route);
+      checkbox.addEventListener("change",()=>{
+        if(selectedRoutes===null)selectedRoutes=new Set(availableRoutes);
+        if(checkbox.checked)selectedRoutes.add(route);else selectedRoutes.delete(route);
+        try{localStorage.setItem("metrobus-routes-"+stopID,JSON.stringify([...selectedRoutes]));}catch(e){}
+        render();
+      });label.append(checkbox,document.createTextNode(route));holder.append(label);
+    }
+  }
+  function discoverRoutes(){
+    const found=new Set([...predictions.map(p=>p.route),...schedule.map(p=>p.route)].map(x=>String(x||"").toUpperCase()).filter(Boolean));
+    const old=[...availableRoutes].sort().join(",");availableRoutes=found;
+    if(old!==[...found].sort().join(","))updateRouteChoices();
+  }
+  loadRouteChoice();
   let pollId = null;
   let lastUpdate = null;
   let working = false;
@@ -442,13 +467,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       if(!Array.isArray(json.ScheduledArrivals))throw Error('invalid schedule');
       schedule=json.ScheduledArrivals.filter(t=>Number.isFinite(Number(t.time))).map(t=>({time:Number(t.time),tripId:String(t.tripId||''),route:String(t.route||''),dest:String(t.headsign||'')})).sort((a,b)=>a.time-b.time);
       scheduleAvailable=true;
-      render();
+      discoverRoutes();render();
     }catch(e){if(requestedStop===stopID){scheduleAvailable=false;schedule=[];render();}}
   }
   function displayBuses(live) {
     const now=Date.now();
     const combined=live.map(p=>({...p,kind:'live',time:now+p.m*60000}));
-    const future=schedule.filter(p=>p.time>now-30000&&p.time<now+24*3600000);
+    const future=schedule.filter(p=>routeVisible(p.route)&&p.time>now-30000&&p.time<now+24*3600000);
     // Match each live vehicle with at most one scheduled trip. Prefer exact trip IDs.
     const claimed=new Set();
     for(const b of combined){
@@ -568,7 +593,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
   function render() {
     $('clock').textContent = nowClock();
-    const arr = getBuses();
+    const arr = getBuses().filter(b=>routeVisible(b.route));
     const display = scheduleAvailable ? displayBuses(mode === 'live' ? arr : []) : (mode === 'live' ? arr.map(b=>({...b,kind:'live'})) : []);
     const stale = mode === 'live' && lastUpdate && (Date.now() - lastUpdate > 90000);
 
@@ -672,7 +697,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
       lastUpdate = Date.now();
       mode = 'live';
-      render();
+      discoverRoutes();render();
       fetchSchedule();
     } catch (e) {
       if(requestedStop!==stopID)return;
@@ -729,10 +754,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     if(next===stopID){toggleSettings(false);return;}
     stopID=next;try{localStorage.setItem('metrobus-stop',stopID)}catch(e){}
     updateStopHeading();
-    predictions=[];schedule=[];scheduleAvailable=false;lastUpdate=null;lastScheduleFetch=0;mode='loading';previousSignature='';
+    predictions=[];schedule=[];availableRoutes=new Set();loadRouteChoice();updateRouteChoices();scheduleAvailable=false;lastUpdate=null;lastScheduleFetch=0;mode='loading';previousSignature='';
     $('error').textContent='';render();connect(true);toggleSettings(false);
   }
   $('saveStop').addEventListener('click',changeStop);
+  $('allRoutes').addEventListener('click',()=>{selectedRoutes=null;try{localStorage.removeItem('metrobus-routes-'+stopID)}catch(e){}updateRouteChoices();render();});
   $('stopInput').addEventListener('keydown',e=>{if(e.key==='Enter')changeStop()});
   updateStopHeading();
   $('applyBtn').addEventListener('click', connect);
