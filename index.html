@@ -245,6 +245,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .char.flip .hinge{background:#0f0f0f}
 @media(prefers-reduced-motion:reduce){.char.flip{animation:none}}
 .routeFilter{flex:1 1 100%;border-top:1px solid #524937;padding-top:13px;margin-top:3px}.routeHeading{font-weight:800;color:var(--amber);font-size:13px;margin-bottom:10px}.routeOption{display:inline-flex;align-items:center;gap:7px;margin:0 12px 10px 0;padding:8px 10px;border:1px solid #4c4335;border-radius:4px;color:#f1e6d0;font-size:13px;cursor:pointer}.routeOption input{accent-color:#d7a451}#allRoutes{padding:7px 10px;font-size:12px}
+
+/* Optional departure warning: flashes cabinet border, without changing flap text. */
+@keyframes departurePulse{0%,100%{border-color:#8e332c;box-shadow:0 0 0 3px #531e1a,0 0 16px #c33b2a55}50%{border-color:#ff7669;box-shadow:0 0 0 5px #b13c30,0 0 42px #ff493388}}
+.board.departureFlash{animation:departurePulse 1s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){.board.departureFlash{animation:none;border-color:#ff7669;box-shadow:0 0 0 4px #b13c30}}
 </style>
 </head>
 <body>
@@ -305,6 +310,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       <button id="applyBtn" class="primary">Reconnect live</button>
       <div class="routeFilter"><div class="routeHeading">Visible routes</div><div id="routeChoices">Loading routes…</div><button id="allRoutes" type="button">Show all routes</button></div>
       <label class="soundToggle"><input id="soundToggle" type="checkbox"> Mechanical clack sound <span id="soundState">Muted</span></label>
+      <label class="soundToggle"><input id="alertToggle" type="checkbox"> Flash when it is time to leave <span id="alertState">Off</span></label>
+      <button id="testAlert" type="button">Test departure flash</button>
     </div>
     <div class="help">Live refresh: every 30 seconds while this page is open. WMATA prediction API: <a href="https://developer.wmata.com/apis" target="_blank" rel="noopener noreferrer">developer.wmata.com</a> · <a href="https://buseta.wmata.com/m/index?q=1001453" target="_blank" rel="noopener noreferrer">Official stop page</a></div>
     <div id="error" class="error" role="alert"></div>
@@ -358,6 +365,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   let demoSet = Date.now();
   let previousSignature = '';
   let forceCycle = false;
+  let alertEnabled=false, alertTestUntil=0, previousAlertKey=null;
   const wheel = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let soundEnabled = false, audioCtx = null, lastClack = 0;
@@ -648,6 +656,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       }
     }
 
+    const isUrgent=mode==='live'&&!stale&&arr.length>0&&display[0]?.kind==='live'&&tone==='leave-now';
+    const alertKey=isUrgent ? stopID+'|'+(arr[0].tripId||arr[0].id||arr[0].route+'-'+Math.round((lastUpdate||Date.now())/1800000)) : null;
+    if(alertKey!==previousAlertKey){previousAlertKey=alertKey;if(isUrgent&&alertEnabled)alertTestUntil=Date.now()+12000;}
+    const flashing=alertEnabled&&((isUrgent&&alertTestUntil>Date.now())||alertTestUntil>Date.now());
+    $('board').classList.toggle('departureFlash',flashing);
     const previousStatus = previousSignature ? JSON.parse(previousSignature).statusText || '' : '';
     if (animate || forceCycle) renderStatus(statusText, detail, tone, previousStatus, true);
     else $('detail').textContent = detail;
@@ -763,6 +776,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   updateStopHeading();
   $('applyBtn').addEventListener('click', connect);
   $('soundToggle').addEventListener('change',e=>setSound(e.target.checked));
+  try{alertEnabled=localStorage.getItem('metrobus-alert')==='on'}catch(e){}
+  $('alertToggle').checked=alertEnabled;
+  $('alertState').textContent=alertEnabled?'On':'Off';
+  $('alertToggle').addEventListener('change',e=>{alertEnabled=e.target.checked;$('alertState').textContent=alertEnabled?'On':'Off';try{localStorage.setItem('metrobus-alert',alertEnabled?'on':'off')}catch(e){};if(!alertEnabled)alertTestUntil=0;render()});
+  $('testAlert').addEventListener('click',()=>{alertTestUntil=Date.now()+8000;$('board').classList.add('departureFlash');toggleSettings(false);render()});
   $('refreshBtn').addEventListener('click', () => mode === 'live' ? fetchLive(true) : connect(true));
   const settings = $('settings');
   function toggleSettings(open) {settings.hidden = !open; $('settingsBtn').setAttribute('aria-expanded',String(open)); if(open) $('walk').focus(); else $('settingsBtn').focus();}
