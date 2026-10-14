@@ -434,14 +434,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     if(Date.now()-lastScheduleFetch<240000)return;
     lastScheduleFetch=Date.now();
     try {
-      const response=await fetch('api/schedule.php?stop='+encodeURIComponent(stopID),{cache:'no-store'});
+      const requestedStop=stopID;
+      const response=await fetch('api/schedule.php?stop='+encodeURIComponent(requestedStop),{cache:'no-store'});
       if(!response.ok)throw Error('schedule unavailable');
       const json=await response.json();
+      if(requestedStop!==stopID)return;
       if(!Array.isArray(json.ScheduledArrivals))throw Error('invalid schedule');
       schedule=json.ScheduledArrivals.filter(t=>Number.isFinite(Number(t.time))).map(t=>({time:Number(t.time),tripId:String(t.tripId||''),route:String(t.route||''),dest:String(t.headsign||'')})).sort((a,b)=>a.time-b.time);
       scheduleAvailable=true;
       render();
-    }catch(e){scheduleAvailable=false;schedule=[];render();}
+    }catch(e){if(requestedStop===stopID){scheduleAvailable=false;schedule=[];render();}}
   }
   function displayBuses(live) {
     const now=Date.now();
@@ -643,12 +645,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     if (force) forceCycle = true;
     if (working) { if (force) render(); return; }
     working = true;
+    const requestedStop=stopID;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     $('error').textContent = '';
 
     try {
-      const response = await fetch('api/arrivals.php?stop='+encodeURIComponent(stopID), { cache: 'no-store', signal: controller.signal });
+      const response = await fetch('api/arrivals.php?stop='+encodeURIComponent(requestedStop), { cache: 'no-store', signal: controller.signal });
       const json = await response.json().catch(() => {
         throw new Error(`Server returned HTTP ${response.status} instead of valid JSON. Check PHP setup.`);
       });
@@ -665,6 +668,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       render();
       fetchSchedule();
     } catch (e) {
+      if(requestedStop!==stopID)return;
       mode = 'error';
       predictions = [];
       $('error').textContent = `Live connection failed: ${e.name === 'AbortError' ? 'request timed out' : e.message}. Check that arrivals.php is deployed and your private WMATA key is configured.`;
