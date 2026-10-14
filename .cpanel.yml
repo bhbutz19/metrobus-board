@@ -1,8 +1,8 @@
 ---
 deployment:
   tasks:
-    # Replace CPANEL_USERNAME and confirm the bus subdomain's document root before deployment.
-    - export DEPLOYPATH=/home/CPANEL_USERNAME/public_html/bus/
+    # Verified cPanel document root for bus.cowboybutz.com.
+    - export DEPLOYPATH=/home/cowboybu/public_html/bus.cowboybutz.com/
     - /bin/mkdir -p "$DEPLOYPATH/api"
     - /bin/cp index.html "$DEPLOYPATH/index.html"
     - /bin/cp api/arrivals.php "$DEPLOYPATH/api/arrivals.php"
