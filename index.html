@@ -499,7 +499,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
       for (let i = 0; i < Math.min(3, arr.length); i++) {
         rows.push({ route: ROUTE, dest: DESTINATION, arrive: minsLabel(arr[i].m) });
       }
-      while (rows.length < 3) rows.push({ route: ROUTE, dest: DESTINATION, arrive: '      ' });
+      while (rows.length < 3) rows.push({ route: ROUTE, dest: DESTINATION, arrive: 'NO ETA' });
     }
 
     const signature = JSON.stringify({ rows, mode, stale, walk: $('walk').value, buffer: $('buffer').value, first: arr[0]?.m ?? null });
