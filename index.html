@@ -162,6 +162,29 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   .routeField .char,.statusBoard .flapGroup .char{width:20px;height:30px}
   .routeField .char .top,.routeField .char .bottom,.statusBoard .flapGroup .char .top,.statusBoard .flapGroup .char .bottom{font-size:18px}
 }
+/* Single centered glyph: hinge overlays the letter rather than cropping its halves. */
+.char .face{
+  position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;
+  font-family:"Courier New",monospace;font-size:clamp(18px,2vw,28px);font-weight:900;
+  line-height:1;color:var(--paper);text-shadow:0 1px 0 #000;
+  white-space:nowrap;transform-origin:center;
+}
+.routeField .char .face{font-size:clamp(20px,2.3vw,32px)}
+.arriveField .char .face{font-size:clamp(19px,2.1vw,30px)}
+.statusBoard .flapGroup .char .face{font-size:clamp(20px,2.7vw,36px)}
+.char.accent .face{color:var(--amber)}
+.statusBoard.leave-soon .char .face{color:var(--yellow)}
+.statusBoard.leave-now .char .face{color:var(--red)}
+.statusBoard.comfortable .char .face{color:var(--green)}
+.char.flip .face{animation:faceFlip .26s ease-in-out both}
+@keyframes faceFlip{
+  0%{transform:perspective(260px) rotateX(0deg);filter:brightness(1)}
+  48%{transform:perspective(260px) rotateX(-80deg);filter:brightness(.5)}
+  55%{transform:perspective(260px) rotateX(75deg);filter:brightness(.65)}
+  100%{transform:perspective(260px) rotateX(0deg);filter:brightness(1)}
+}
+@media(prefers-reduced-motion:reduce){.char.flip .face{animation:none}}
+@media(max-width:620px){.char .face,.routeField .char .face,.arriveField .char .face,.statusBoard .flapGroup .char .face{font-size:18px}}
 </style>
 </head>
 <body>
@@ -251,8 +274,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   function cycleTile(tile, from, to, delay) {
     if (reducedMotion.matches || from === to && !forceCycle) return;
-    const top = tile.querySelector('.top .glyph'), bottom = tile.querySelector('.bottom .glyph');
-    if (!top || !bottom) return;
+    const face = tile.querySelector('.face');
+    if (!face) return;
     let current = wheel.indexOf(from); if (current < 0) current = 0;
     const target = Math.max(0, wheel.indexOf(to));
     let steps = (target - current + wheel.length) % wheel.length;
@@ -261,9 +284,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     const frames = [];
     for (let i=0; i<steps-1; i++) frames.push(wheel[(current + i + 1) % wheel.length]);
     frames.push(to);
-    top.textContent = from; bottom.textContent = from;
+    face.textContent = from;
     frames.forEach((letter, i) => setTimeout(() => {
-      top.textContent = letter; bottom.textContent = letter;
+      face.textContent = letter;
       tile.classList.remove('flip'); void tile.offsetWidth; tile.classList.add('flip');
     }, delay + i * 68));
   }
@@ -310,26 +333,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
   function createChar(char, extraClass = '', shouldFlip = false) {
     const tile = document.createElement('span');
-    tile.className = 'char' + (char === ' ' ? ' space' : '') + (extraClass ? ' ' + extraClass : '') + (shouldFlip ? ' flip' : '');
-    const top = document.createElement('span');
-    top.className = 'top';
-    const topGlyph = document.createElement('span');
-    topGlyph.className = 'glyph';
-    topGlyph.textContent = char;
-    top.appendChild(topGlyph);
-    const bottom = document.createElement('span');
-    bottom.className = 'bottom';
-    const bottomGlyph = document.createElement('span');
-    bottomGlyph.className = 'glyph';
-    bottomGlyph.textContent = char;
-    bottom.appendChild(bottomGlyph);
+    tile.className = 'char' + (char === ' ' ? ' space' : '') + (extraClass ? ' ' + extraClass : '');
+    const face = document.createElement('span');
+    face.className = 'face';
+    face.textContent = char;
     const hinge = document.createElement('span');
     hinge.className = 'hinge';
-    tile.append(top, bottom, hinge);
+    tile.append(face, hinge);
     return tile;
   }
 
-  function createFlapGroup(text, width, opts = {}) {
+    function createFlapGroup(text, width, opts = {}) {
     const group = document.createElement('div');
     group.className = 'flapGroup';
     const previous = opts.previous || '';
