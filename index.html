@@ -707,9 +707,21 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   }
 
   $('stopInput').value=stopID;
+  let stopLookupSeq=0;
   function updateStopHeading(){
     $('boardSite').textContent=stopID===DEFAULT_STOP?'P STREET · WESTBOUND':'STOP '+stopID+' · DEPARTURES';
-    $('stopDescription').textContent=stopID===DEFAULT_STOP?'P St NW + 7th St NW · Stop 1001453 · West toward Georgetown':'WMATA stop '+stopID+' · All routes and directions';
+    $('stopDescription').textContent='WMATA stop '+stopID+' · All routes and directions';
+    const selected=stopID, seq=++stopLookupSeq;
+    fetch('api/stop.php?stop='+encodeURIComponent(selected))
+      .then(r=>{if(!r.ok)throw Error('Stop metadata unavailable');return r.json()})
+      .then(data=>{
+        if(seq!==stopLookupSeq||selected!==stopID)return;
+        const name=String(data.Name||'').trim();
+        if(!name)return;
+        const cleaned=name.replace(/\\s+/g,' ').toUpperCase();
+        $('boardSite').textContent=cleaned;
+        $('stopDescription').textContent=name+' · Stop '+stopID;
+      }).catch(()=>{ /* Retain the stop-number fallback if metadata is unavailable. */ });
   }
   function changeStop(){
     const next=$('stopInput').value.trim();
