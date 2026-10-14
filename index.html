@@ -201,6 +201,23 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .flapGroup{gap:2px}
 .board{background:linear-gradient(#100f0d,#090909);box-shadow:0 15px 55px #000c,inset 0 0 0 2px #040404,inset 0 0 0 3px #554a36}
 @media(max-width:620px){.settings{top:65px}.titlePlate{letter-spacing:.045em}}
+/* v1.6 heavier, condensed split-flap lettering */
+.char .face{
+  font-family:"Arial Narrow","Liberation Sans Narrow",Impact,"Arial Black",sans-serif;
+  font-weight:900;
+  font-stretch:condensed;
+  letter-spacing:-.055em;
+  transform:scaleX(.89);
+  text-shadow:0 1px 0 #000, .3px 0 currentColor;
+}
+.char.flip .face{animation:faceFlipBold .26s ease-in-out both}
+@keyframes faceFlipBold{
+  0%{transform:scaleX(.89) perspective(260px) rotateX(0);filter:brightness(1)}
+  48%{transform:scaleX(.89) perspective(260px) rotateX(-80deg);filter:brightness(.5)}
+  55%{transform:scaleX(.89) perspective(260px) rotateX(75deg);filter:brightness(.65)}
+  100%{transform:scaleX(.89) perspective(260px) rotateX(0);filter:brightness(1)}
+}
+@media(prefers-reduced-motion:reduce){.char.flip .face{animation:none}}
 </style>
 </head>
 <body>
